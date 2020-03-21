@@ -3,6 +3,10 @@
 /.**
 
 ### not ignore ###
+# dotfiles management
+!dotlink
+!link_dotfiles.sh
+
 # zsh
 !/.zshrc
 !/.zshenv
@@ -28,10 +32,12 @@
 .bash_sessions
 
 # VS Code
+!.vscode/extensions.txt
 !.vscode/snippets
 !.vscode/keybindings.json
 !.vscode/settings.json
 !.vscode/write_vscode_settings.sh
+!.mume
 
 .vscode/extensions
 
@@ -95,8 +101,12 @@
 !/.config/
 !/.config/**
 
-### Must ignore files ###
+### Must be ignored files ###
 # Credentials
 .ssh
 .aws
 .env
+
+# Other ignored files
+.cups
+.CFUserTextEncoding
