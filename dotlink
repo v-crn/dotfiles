@@ -30,3 +30,9 @@
 # arguments and confirm whether or not to execute that command.
 #
 #------------------------------------------------------------------------------
+.zshrc,.zshrc
+.zshenv,.zshenv
+.zprofile,.zprofile
+.vscode,.vscode
+.mume,.mume
+.config,.config

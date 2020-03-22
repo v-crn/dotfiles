@@ -7,6 +7,9 @@
 !dotlink
 !link_dotfiles.sh
 
+# Mac
+!Brewfile
+
 # zsh
 !/.zshrc
 !/.zshenv
@@ -28,6 +31,8 @@
 .zsh_history
 
 # bash
+!/.bash_profile
+!/.bashrc
 .bash_history
 .bash_sessions
 
@@ -37,6 +42,7 @@
 !.vscode/keybindings.json
 !.vscode/settings.json
 !.vscode/write_vscode_settings.sh
+!.vscode/load_vscode_settings.sh
 !.mume
 
 .vscode/extensions
@@ -80,6 +86,9 @@
 !/LICENSE
 !.gitignore
 !.gitkeep
+!.config/git/ignore
+
+.gitconfig
 
 # Github
 !/.github/**

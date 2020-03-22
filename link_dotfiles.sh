@@ -6,8 +6,10 @@ git submodule update
 
 echo "start setup..."
 for f in .??*; do
+    # Files don't need to be linked
     [ "$f" = ".git" ] && continue
     [ "$f" = ".gitignore" ] && continue
+    [ "$f" = ".gitconfig" ] && continue
     [ "$f" = ".gitconfig.local.template" ] && continue
     [ "$f" = ".gitmodules" ] && continue
     [[ "$f" == ".DS_Store" ]] && continue
