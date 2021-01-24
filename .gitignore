@@ -9,9 +9,6 @@
 
 !envs/
 
-# Mac
-!Brewfile
-
 # zsh
 !/.zshrc
 !/.zshenv
