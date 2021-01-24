@@ -4,20 +4,28 @@
 
 ## Prerequests
 
-- [ssh0/dot: Simplest dotfiles manager written in shellscript](https://github.com/ssh0/dot)
+- zsh
 
 ## Installation
 
 ```sh
 git clone https://github.com/v-crn/dotfiles.git
+
+cd dotfiles
+# install dot
+source zsh/.zshrc.d/dot.zsh
 ```
 
-```sh
-export DOT_REPO="https://github.com/your_username/dotfiles.git"
-export DOT_DIR="$HOME/.dotfiles"
-```
+- If your dotfiles/ don't be located at `~/dotfiles/`, please edit `DOT_DIR="$HOME/dotfiles"` in `zsh/.zshrc.d/dot.zsh` and commit the above command.
 
 ## Usage
+
+### Restore dotfiles from remote github repository
+
+```sh
+dot update
+zsh
+```
 
 ### Add a new dotfile from root directory
 
@@ -47,12 +55,6 @@ dot set
 ```
 
 After above, commit changes to git.
-
-### Restore dotfiles from remote github repository
-
-```sh
-dot update
-```
 
 ## .gitignore の設定について
 
