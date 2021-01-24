@@ -1,29 +1,6 @@
-### all ignore ###
-/*
-/.**
-
-### not ignore ###
-# dotfiles management
-!dotlink
-!link_dotfiles.sh
-
-!envs/
-
 # zsh
-!/.zshrc
-!/.zshenv
-!/.zfunc/
-/.zfunc/** # ディレクトリは管理したいけど中身はいらない場合
-!/.zsh/
-!/.zsh/dircolors
-!/.zsh/rc/
-!/.zsh/rc/**
-!/.zsh/zkbd/
-!/.zsh/zkbd/**
-!/.zsh/zfunc/
-!/.zsh/zfunc/**
-!/.zsh/completion/
-/.zsh/completion/**
+!.zshenv
+!/zsh
 
 .zshrc.local
 .zprezto
