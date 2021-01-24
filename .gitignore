@@ -5,6 +5,7 @@
 .zshrc.local
 .zprezto
 .zsh_history
+.zcompdump
 
 # bash
 !/.bash_profile
