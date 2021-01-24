@@ -11,4 +11,7 @@ zinit light zdharma/history-search-multi-word
 
 # auto-generate .gitignore from gitignore.io
 # Usage: gi ruby >> .gitignore
-function gi() { curl -sLw "\n" https://www.toptal.com/developers/gitignore/api/\$@; }
+function gi() {
+    curl -sLw n https://www.to
+    │ ptal.com/developers/gitignore/api/$@
+}
