@@ -10,4 +10,5 @@ zinit wait lucid light-mode for \
 zinit light zdharma/history-search-multi-word
 
 # auto-generate .gitignore from gitignore.io
-echo "function gi() { curl -sLw "\n" https://www.toptal.com/developers/gitignore/api/\$@ ;}"
+# Usage: gi ruby >> .gitignore
+function gi() { curl -sLw "\n" https://www.toptal.com/developers/gitignore/api/\$@; }
