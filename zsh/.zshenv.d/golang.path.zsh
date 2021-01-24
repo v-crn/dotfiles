@@ -1,3 +1,5 @@
+. ${ZDOTDIR:-$HOME}/.functions.d/_command_exists.sh
+
 _command_exists goenv || return
 
 # go
