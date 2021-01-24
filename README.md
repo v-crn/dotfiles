@@ -25,11 +25,28 @@ export DOT_DIR="$HOME/.dotfiles"
 dot add ~/.dotfile
 ```
 
+After above, commit changes to git.
+
 ### Add a new dotfile in local `dotfiles/` directory
 
+#### 1. Edit `dotlink`
+
+Example:
+
 ```sh
-dot set $DOT_DIR/.dotfile
+# <file in dotfiles/>,<symbolic link>
+.config/git,.config/git
+zsh,zsh
+.zshenv,.zshenv
 ```
+
+#### 2. Set the symbolic links
+
+```sh
+dot set
+```
+
+After above, commit changes to git.
 
 ### Restore dotfiles from remote github repository
 
