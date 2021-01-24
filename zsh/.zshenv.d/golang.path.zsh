@@ -1,3 +1,5 @@
+_command_exists goenv || return
+
 # go
 export GOPATH=$HOME/go
 export PATH=$GOPATH/bin:$PATH
