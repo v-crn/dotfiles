@@ -9,14 +9,16 @@
 ## Installation
 
 ```sh
+cd ~
 git clone https://github.com/v-crn/dotfiles.git
 
 cd dotfiles
+
 # install dot
 source zsh/.zshrc.d/dot.zsh
 ```
 
-- If your `dotfiles/` is not located at `~/dotfiles/`, please edit `DOT_DIR="$HOME/dotfiles"` in `zsh/.zshrc.d/dot.zsh` and then commit the above command.
+If your `dotfiles/` is not located at `~/dotfiles/`, please edit `DOT_DIR="$HOME/dotfiles"` in `zsh/.zshrc.d/dot.zsh` and then commit the above command.
 
 ## Usage
 
