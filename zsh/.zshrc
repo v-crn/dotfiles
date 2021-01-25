@@ -8,6 +8,6 @@
 # --------------------------
 # Load .zshrc files
 # --------------------------
-. ${ZDOTDIR:-$HOME}/.functions.d/_sources.sh
+. ${ZDOTDIR:-$HOME}/functions/_sources.sh
 
 _sources ${ZDOTDIR:-$HOME}/.zshrc.d/*.zsh(N-.)

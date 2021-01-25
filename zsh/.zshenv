@@ -13,6 +13,6 @@ fi
 # --------------------------
 # Load .zshenv files
 # --------------------------
-. ${ZDOTDIR:-$HOME}/.functions.d/_sources.sh
+. ${ZDOTDIR:-$HOME}/functions/_sources.sh
 
 _sources ${ZDOTDIR:-$HOME}/.zshenv.d/*.zsh(N-.)

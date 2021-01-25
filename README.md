@@ -16,7 +16,7 @@ cd dotfiles
 source zsh/.zshrc.d/dot.zsh
 ```
 
-- If your dotfiles/ don't be located at `~/dotfiles/`, please edit `DOT_DIR="$HOME/dotfiles"` in `zsh/.zshrc.d/dot.zsh` and commit the above command.
+- If your `dotfiles/` is not located at `~/dotfiles/`, please edit `DOT_DIR="$HOME/dotfiles"` in `zsh/.zshrc.d/dot.zsh` and then commit the above command.
 
 ## Usage
 
@@ -56,6 +56,11 @@ dot set
 
 After above, commit changes to git.
 
-## .gitignore の設定について
+## Dependency
 
-エディタやシェルにプラグインを入れると， dotfiles 管理下のディレクトリに自動的にファイルが作られることがある．他のファイルが追加されても更新があるように見えないようにするため，.gitignore をホワイトリスト形式で記述する．
+- zsh plugin
+  - [ssh0/dot](https://github.com/ssh0/dot)
+
+## Ref.
+
+[bto/dotfiles](https://github.com/bto/dotfiles)
