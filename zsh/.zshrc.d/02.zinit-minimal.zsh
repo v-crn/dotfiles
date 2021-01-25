@@ -8,9 +8,3 @@ zinit wait lucid light-mode for \
 
 # history-search-multi-word with Ctrl+R
 zinit light zdharma/history-search-multi-word
-
-# auto-generate .gitignore from gitignore.io
-# Usage: gi ruby >> .gitignore
-function gi() {
-    curl -sLw n https://www.toptal.com/developers/gitignore/api/$@
-}
