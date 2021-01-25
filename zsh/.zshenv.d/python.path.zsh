@@ -1,1 +1,1 @@
-export PYTHONPATH=$PYTHONPATH:$(pwd)
+[[ ":$PYTHONPATH:" != *":$(pwd):"* ]] && PYTHONPATH="$(pwd):$PYTHONPATH"
