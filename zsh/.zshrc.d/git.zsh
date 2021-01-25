@@ -16,3 +16,9 @@ zinit light tj/git-extras
 zinit ice wait"2" lucid as"program" atclone'perl Makefile.PL PREFIX=$ZPFX' atpull'%atclone' \
     make'install' pick"$ZPFX/bin/git-cal"
 zinit light k4rthik/git-cal
+
+# auto-generate .gitignore from gitignore.io
+# Usage: gi ruby >> .gitignore
+function gi() {
+    curl -sLw n https://www.toptal.com/developers/gitignore/api/$@
+}
