@@ -5,6 +5,7 @@
 ## Prerequests
 
 - zsh
+- zinit
 
 ## Installation
 
