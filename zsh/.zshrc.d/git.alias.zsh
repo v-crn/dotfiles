@@ -32,15 +32,19 @@ alias gswc='git switch - c'
 # gres: git restore
 alias gres='git restore'
 
-# gpr: pull the PR branch
-alias gpr='gpr'
-function gpr() {
+# gpl: git pull
+alias gpl='git pull'
+
+# gplr: pull the PR branch
+alias gplr='gplr'
+function gplr() {
     git fetch upstream pull/$@/head:pr/$@ && git checkout pr/$@
 }
 
 # gp: push
 alias gp='git push'
 alias gpo='git push origin'
+alias gpups='git push --set-upstream origin master'
 alias gpoi='gpoi'
 function gpoi() {
     git push origin issues/$@
