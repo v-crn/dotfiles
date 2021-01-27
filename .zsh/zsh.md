@@ -37,13 +37,3 @@ for i in $(seq 1 5); do time zsh -i -c exit; done
 > zsh -i -c exit 0.27s user 0.27s system 73% cpu 0.734 total
 > zsh -i -c exit 0.25s user 0.24s system 79% cpu 0.619 total
 > zsh -i -c exit 0.23s user 0.20s system 87% cpu 0.489 total
-
-## zsh.mk
-
-シンボリックリンクを貼る前の zsh の設定ファイルを調整中の段階で変更を反映させるために使う．
-
-```sh
-make rm_zsh
-
-make add_zsh
-```
