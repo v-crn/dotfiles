@@ -44,7 +44,7 @@ function gplr() {
 # gp: push
 alias gp='git push'
 alias gpo='git push origin'
-alias gpups='git push --set-upstream origin master'
+alias gpups='git push --set-upstream origin'
 alias gpoi='gpoi'
 function gpoi() {
     git push origin issues/$@
