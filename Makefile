@@ -1,1 +1,1 @@
-include zsh/zsh.mk
+include .zsh/zsh.mk

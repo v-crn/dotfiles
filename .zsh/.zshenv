@@ -16,5 +16,5 @@ fi
 . ${ZDOTDIR:-$HOME}/functions/_sources.sh
 . ${ZDOTDIR:-$HOME}/functions/_command_exists.sh
 
-_sources $ZDOTDIR/zshenv.zsh(N-.)
+_sources $ZDOTDIR/.zshenv.zsh(N-.)
 _sources ${ZDOTDIR:-$HOME}/.zshenv.d/*.zsh(N-.)
