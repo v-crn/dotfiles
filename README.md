@@ -66,9 +66,15 @@ If your `dotfiles/` is not located at `~/dotfiles/`, please edit `DOT_DIR="$HOME
 ### Restore dotfiles from remote github repository
 
 ```sh
+dot clear
 dot update
 zsh
 ```
+
+- `dot clear`: 2 回目以降の更新でファイル名の変更などがある場合に必要
+  - シンボリックリンクの実体が削除されると面倒なことになる
+  - 更新でシンボリックリンクの実体を失ってしまったら，適当なファイルやディレクトリを作って dotlink を編集し， `dot set` でシンボリックリンクに再度実体を伴わせる
+  - 読み込みに成功することを確認したら `dot unlink 不要なシンボリックリンク` でシンボリックリンクを外し，不要になったファイルなどを削除する
 
 ### Add a new dotfile from root directory
 
