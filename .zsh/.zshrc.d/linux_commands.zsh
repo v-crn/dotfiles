@@ -1,1 +1,1 @@
-alias ls='ls -oahtrG'
+alias lsdetail='ls -oahtrG'
