@@ -6,6 +6,7 @@
 .zprezto
 .zsh_history
 .zcompdump
+.zcompcache
 
 # bash
 !/.bash_profile
