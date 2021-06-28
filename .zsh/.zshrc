@@ -1,13 +1,10 @@
-#
-# Executes commands at the start of an interactive session.
-#
-# Authors:
-#   Sorin Ionescu <sorin.ionescu@gmail.com>
-#
+# --------------------------
+# typeset
+# --------------------------
+. ${ZDOTDIR:-$HOME}/functions/typeset.sh
 
 # --------------------------
 # Load .zshrc files
 # --------------------------
 . ${ZDOTDIR:-$HOME}/functions/_sources.sh
-
 _sources ${ZDOTDIR:-$HOME}/.zshrc.d/*.zsh(N-.)
