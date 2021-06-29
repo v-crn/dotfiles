@@ -1,3 +1,3 @@
-if [ -e "$HOME/.poetry/bin:$PATH" ]; then
+if [ -e "$HOME/.poetry/bin" ]; then
     export PATH="$HOME/.poetry/bin:$PATH"
 fi
