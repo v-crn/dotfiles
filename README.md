@@ -53,13 +53,21 @@ sudo apt install locales-all
 ```sh
 cd ~
 git clone https://github.com/v-crn/dotfiles.git
-cd dotfiles
 
 # install dot
-source .zsh/.zshrc.d/dot.zsh
+source ~/dotfiles/.zsh/.zshrc.d/dot.zsh
 ```
 
 If your `dotfiles/` is not located at `~/dotfiles/`, please edit `DOT_DIR="$HOME/dotfiles"` in `.zsh/.zshrc.d/dot.zsh` and then commit the above command.
+
+次のようなエラーが起きたらファイルの権限を `chmod` コマンドで変更する必要がある。
+
+> Downloading ssh0/dot…
+> fatal: could not create leading directories of '/Users/v-crn/.zinit/plugins/ssh0---dot': Permission denied
+
+```sh
+sudo chmod -R 777 ~/.zinit/
+```
 
 ## Usage
 
