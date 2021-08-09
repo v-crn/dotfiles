@@ -1,3 +1,5 @@
+plugins
+
 # zsh
 !.zshenv
 !/zsh
@@ -7,6 +9,7 @@
 .zsh_history
 .zcompdump
 .zcompcache
+.zsh_sessions
 
 # bash
 !/.bash_profile
