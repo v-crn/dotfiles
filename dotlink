@@ -33,4 +33,3 @@
 .config/git,.config/git
 .zsh,.zsh
 .zshenv,.zshenv
-.profile,.profile
