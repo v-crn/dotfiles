@@ -6,4 +6,4 @@ if [ -f '~/google-cloud-sdk/completion.zsh.inc' ]; then . '~/google-cloud-sdk/co
 
 _command_exists python || return
 
-export CLOUDSDK_PYTHON=python
+export CLOUDSDK_PYTHON=~/.pyenv/versions/3.7.11/envs/google-cloud-sdk-python/bin/python
