@@ -7,11 +7,6 @@
 - zsh
 - zinit
 
-For Ubuntu minimal:
-
-- column (required by git-extras)
-- locales-all (required by git-cal)
-
 ### Install zsh
 
 ```sh
