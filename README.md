@@ -17,7 +17,7 @@ sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/too
 
 ```sh
 sh -c "$(curl -fsSL https://raw.githubusercontent.com/zdharma-continuum/zinit/master/doc/install.sh)"
-source "$HOME/.zinit/bin/zinit.zsh"
+source "$HOME/.local/share/zinit/polaris/bin/zinit.zsh"
 ```
 
 ## Installation
