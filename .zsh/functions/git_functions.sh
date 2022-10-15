@@ -1,5 +1,13 @@
-# github_main_name などの環境変数は dotfiles/.env に定義すること
+function gitconfig() {
+  configpath="$HOME/.gitconfig"
+  if [ -f  $configpath ]; then
+    cat $configpath
+  else
+    echo "$configpath not found."
+  fi
+}
 
+# github_main_name などの環境変数は dotfiles/.env に定義すること
 function gitmain() {
   git config --global user.name ${github_main_name}
   git config --global user.email ${github_main_email}
