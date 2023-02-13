@@ -9,11 +9,15 @@
 
 ### Install zsh
 
+[Installing ZSH · ohmyzsh/ohmyzsh Wiki](https://github.com/ohmyzsh/ohmyzsh/wiki/Installing-ZSH)
+
 ```sh
-sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+sudo apt-get update -y && sudo apt-get install -y zsh
 ```
 
 ### Install zinit
+
+zsh を起動した状態で以下のコマンドを実行する。
 
 ```sh
 bash -c "$(curl --fail --show-error --silent --location https://raw.githubusercontent.com/zdharma-continuum/zinit/HEAD/scripts/install.sh)"
