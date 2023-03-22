@@ -21,3 +21,6 @@ fi
 source "$HOME/.local/share/zinit/polaris/zinit.git/zinit.zsh"
 autoload -Uz _zinit
 (( ${+_comps} )) && _comps[zinit]=_zinit
+
+# To avoid 'zsh: no matches found' error
+setopt nonomatch
