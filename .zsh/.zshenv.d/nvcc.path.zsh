@@ -18,3 +18,8 @@ fi
 if [ -e "/usr/lib/wsl/lib" ]; then
     export LD_LIBRARY_PATH="/usr/lib/wsl/lib:$LD_LIBRARY_PATH"
 fi
+
+tensorrt_parent_dir=$(if pip show tensorrt >/dev/null 2>&1; then pip show tensorrt | awk '/^Location: /{print $2}'; fi)
+if [ -e $tensorrt_path ]; then
+    export LD_LIBRARY_PATH="$tensorrt_parent_dir/tensorrt:${LD_LIBRARY_PATH}"
+fi
