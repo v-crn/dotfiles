@@ -9,6 +9,7 @@
 
 if [ -e "/usr/local/cuda/bin" ]; then
     export PATH="/usr/local/cuda/bin:$PATH"
+    export CUDA_HOME="/usr/local/cuda"
 fi
 
 if [ -e "/usr/local/cuda/lib64" ]; then
