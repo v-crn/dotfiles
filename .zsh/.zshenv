@@ -14,7 +14,11 @@ fi
 # Load .env
 # 環境変数に無い.env変数を環境変数としてインポートする
 # --------------------------
-set -a; eval "$(cat $HOME/dotfiles/.env <(echo) <(declare -x))"; set +a;
+if [ -f "$HOME/dotfiles/.env" ]; then
+    set -a
+    eval "$(cat $HOME/dotfiles/.env <(echo) <(declare -x))"
+    set +a
+fi
 
 # --------------------------
 # Load .zshenv files
