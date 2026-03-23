@@ -1,0 +1,34 @@
+# ── History ──────────────────────────────────────────────────────────────────
+HISTFILE=~/.zsh_history
+HISTSIZE=10000
+SAVEHIST=10000
+setopt SHARE_HISTORY HIST_IGNORE_DUPS HIST_REDUCE_BLANKS
+
+# ── Completion ───────────────────────────────────────────────────────────────
+autoload -Uz compinit && compinit
+
+# ── Key bindings ─────────────────────────────────────────────────────────────
+bindkey -e                        # Emacs key bindings
+bindkey '^[[A' history-search-backward
+bindkey '^[[B' history-search-forward
+
+# ── Aliases ──────────────────────────────────────────────────────────────────
+alias ls='eza --icons'
+alias ll='eza -lh --icons --git'
+alias la='eza -lha --icons --git'
+alias lt='eza --tree --icons'
+alias cat='bat --paging=never'
+
+# ── PATH ─────────────────────────────────────────────────────────────────────
+export PATH="$PATH:$HOME/.local/bin"
+
+# ── mise ─────────────────────────────────────────────────────────────────────
+eval "$(mise activate zsh)"
+
+# ── Plugins (sheldon) ────────────────────────────────────────────────────────
+if [ -x "$HOME/.local/bin/sheldon" ]; then
+    eval "$(sheldon source)"
+fi
+
+# ── Prompt (starship) ────────────────────────────────────────────────────────
+eval "$(starship init zsh)"

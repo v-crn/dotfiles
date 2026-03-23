@@ -1,0 +1,11 @@
+# ZSH history
+.zsh_history
+
+# OS / editor artifacts
+.DS_Store
+*.swp
+*.swo
+*~
+
+# chezmoi internal cache
+.chezmoicache/
