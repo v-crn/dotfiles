@@ -20,7 +20,6 @@ chezmoi.toml
 # Claude Code runtime files (not project config)
 .claude/agents
 .claude/commands
-.claude/settings.json
 .claude/settings.local.json
 .claude/skills
 

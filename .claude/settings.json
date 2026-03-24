@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(bats:*)",
+      "Bash(chezmoi apply:*)"
+    ]
+  },
+  "sandbox": {
+    "filesystem": {
+      "allowWrite": [
+        "~/.zshenv",
+        "~/.zprofile",
+        "~/.zshrc",
+        "~/.config/chezmoi",
+        "~/.config/sheldon",
+        "~/.config/zsh",
+        "~/.config/starship.toml"
+      ]
+    }
+  }
+}
