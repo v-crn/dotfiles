@@ -8,9 +8,8 @@ Personal dotfiles managed with [chezmoi](https://www.chezmoi.io/).
 - **Tool:** chezmoi (source directory layout with `.chezmoiroot`)
 - **Shell:** zsh with sheldon (plugins), starship (prompt), mise (runtime manager)
 
-> The zsh configuration is the first managed dotfile and serves as a reference implementation.
-> This repository is designed to grow incrementally — git, vim, SSH, and other tool configs
-> will be added over time following the same patterns.
+> This repository is designed to grow incrementally — zsh, git, vim, SSH, and other tool configs
+> will be added over time.
 
 ## Repository Structure
 
