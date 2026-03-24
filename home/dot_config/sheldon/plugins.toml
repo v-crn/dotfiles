@@ -11,8 +11,20 @@ github = "zsh-users/zsh-completions"
 dir = "src"
 apply = ["fpath"]
 
+[plugins.zsh-autopair]
+github = "hlissner/zsh-autopair"
+
 [plugins.zsh-history-substring-search]
 github = "zsh-users/zsh-history-substring-search"
+
+[plugins.zsh-you-should-use]
+github = "MichaelAquilina/zsh-you-should-use"
+
+# Cloned by sheldon but sourced manually in completion.zsh after compinit.
+# fzf-tab must be loaded after compinit; apply = [] prevents sheldon from sourcing it.
+[plugins.fzf-tab]
+github = "Aloxaf/fzf-tab"
+apply = []
 
 # Must be loaded last: zsh-syntax-highlighting wraps ZLE widgets defined by other plugins.
 # Loading it earlier causes those widgets to be wrapped before they exist, breaking them.

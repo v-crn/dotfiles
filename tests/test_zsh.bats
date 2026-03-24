@@ -259,6 +259,24 @@ SHELDON_CONFIG_DIR="$REPO_ROOT/$CHEZMOI_ROOT/dot_config/sheldon"
     grep -q 'zsh-users/zsh-syntax-highlighting' "$SHELDON_CONFIG_DIR/plugins.toml"
 }
 
+@test "plugins.toml includes zsh-autopair" {
+    grep -q 'hlissner/zsh-autopair' "$SHELDON_CONFIG_DIR/plugins.toml"
+}
+
+@test "plugins.toml includes zsh-you-should-use" {
+    grep -q 'MichaelAquilina/zsh-you-should-use' "$SHELDON_CONFIG_DIR/plugins.toml"
+}
+
+@test "plugins.toml includes fzf-tab" {
+    grep -q 'Aloxaf/fzf-tab' "$SHELDON_CONFIG_DIR/plugins.toml"
+}
+
+@test "fzf-tab has apply = [] in plugins.toml" {
+    # fzf-tab must not be sourced by sheldon; it is sourced after compinit in completion.zsh
+    awk '/\[plugins\.fzf-tab\]/{found=1} found && /apply/{print; exit}' "$SHELDON_CONFIG_DIR/plugins.toml" \
+        | grep -q 'apply = \[\]'
+}
+
 @test "plugins.toml has zsh-syntax-highlighting as the last plugin" {
     last_plugin=$(grep -E '^\[plugins\.' "$SHELDON_CONFIG_DIR/plugins.toml" | tail -1)
     [[ "$last_plugin" == *"zsh-syntax-highlighting"* ]]
@@ -266,6 +284,18 @@ SHELDON_CONFIG_DIR="$REPO_ROOT/$CHEZMOI_ROOT/dot_config/sheldon"
 
 @test "plugins.toml contains no secrets" {
     ! grep -qiE '(api_?key|token|password|secret)\s*=' "$SHELDON_CONFIG_DIR/plugins.toml"
+}
+
+@test "completion.zsh sources fzf-tab conditionally after compinit" {
+    # fzf-tab source must appear after compinit line
+    compinit_line=$(grep -n 'compinit' "$ZSH_CONFIG_DIR/completion.zsh" | head -1 | cut -d: -f1)
+    fzftab_line=$(grep -n 'fzf-tab' "$ZSH_CONFIG_DIR/completion.zsh" | head -1 | cut -d: -f1)
+    [ -n "$compinit_line" ] && [ -n "$fzftab_line" ]
+    [ "$compinit_line" -lt "$fzftab_line" ]
+}
+
+@test "completion.zsh guards fzf-tab with command -v fzf" {
+    grep -q 'command -v fzf' "$ZSH_CONFIG_DIR/completion.zsh"
 }
 
 # ---------------------------------------------------------------------------
