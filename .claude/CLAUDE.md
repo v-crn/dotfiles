@@ -101,9 +101,9 @@ chezmoi data                # Show template variables
 
 ## Documentation Policy
 
-- ドキュメントは原則日本語で記述する
-- 実装計画は `docs/plan/` にマークダウンファイルで保存する (`YYYY-MM-DD-<topic>.md`)
-- 仕様書は `docs/spec/` にマークダウンファイルで保存する
+- All documents under `docs/` must be written in Japanese
+- Implementation plans go in `docs/plan/` as Markdown files (`YYYY-MM-DD-<topic>.md`)
+- Specifications go in `docs/spec/` as Markdown files
 
 ## Development Guidelines
 
