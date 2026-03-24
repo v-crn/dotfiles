@@ -9,3 +9,26 @@
 
 # chezmoi internal cache
 .chezmoicache/
+
+# Dev environment artifacts (sandbox / IDE)
+/.idea
+/.vscode
+/.mcp.json
+
+# Claude Code runtime files (not project config)
+.claude/agents
+.claude/commands
+.claude/settings.json
+.claude/settings.local.json
+.claude/skills
+
+# Dotfiles that belong in home/ (not repo root)
+# These may appear as sandbox device files in some environments
+/.bash_profile
+/.bashrc
+/.gitconfig
+/.gitmodules
+/.profile
+/.ripgreprc
+/.zprofile
+/.zshrc
