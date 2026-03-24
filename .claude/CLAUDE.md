@@ -40,6 +40,15 @@ dotfiles/
 ├── tests/
 │   └── test_zsh.bats                     # Shell tests (bats-core)
 └── docs/
+    ├── setup.md                          # Setup guide (new machine, troubleshooting)
+    ├── zsh.md                            # zsh config structure and load order
+    ├── tools/                            # Per-tool documentation
+    │   ├── sheldon.md
+    │   ├── starship.md
+    │   ├── mise.md
+    │   ├── eza.md
+    │   ├── bat.md
+    │   └── fzf.md
     └── dev/
         └── plan/                         # Implementation plans
 ```
