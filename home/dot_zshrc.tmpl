@@ -3,11 +3,11 @@
 _zsh_config="${XDG_CONFIG_HOME:-$HOME/.config}/zsh"
 
 source "$_zsh_config/history.zsh"
-source "$_zsh_config/completion.zsh"
 source "$_zsh_config/keybindings.zsh"
 source "$_zsh_config/aliases.zsh"
 source "$_zsh_config/mise.zsh"
-source "$_zsh_config/sheldon.zsh"
+source "$_zsh_config/sheldon.zsh"   # Must precede compinit: sheldon adds fpath entries (e.g. zsh-completions) that compinit must see
+source "$_zsh_config/completion.zsh"
 source "$_zsh_config/starship.zsh"
 
 unset _zsh_config

@@ -233,17 +233,68 @@ ZSH_CONFIG_DIR="$REPO_ROOT/$CHEZMOI_ROOT/dot_config/zsh"
 # chezmoi managed files
 # ---------------------------------------------------------------------------
 
+# ---------------------------------------------------------------------------
+# sheldon -- plugins.toml
+# ---------------------------------------------------------------------------
+
+SHELDON_CONFIG_DIR="$REPO_ROOT/$CHEZMOI_ROOT/dot_config/sheldon"
+
+@test "dot_config/sheldon/plugins.toml exists" {
+    [ -f "$SHELDON_CONFIG_DIR/plugins.toml" ]
+}
+
+@test "plugins.toml declares shell = zsh" {
+    grep -q '^shell = "zsh"' "$SHELDON_CONFIG_DIR/plugins.toml"
+}
+
+@test "plugins.toml contains at least one plugin section" {
+    grep -qE '^\[plugins\.' "$SHELDON_CONFIG_DIR/plugins.toml"
+}
+
+@test "plugins.toml includes zsh-autosuggestions" {
+    grep -q 'zsh-users/zsh-autosuggestions' "$SHELDON_CONFIG_DIR/plugins.toml"
+}
+
+@test "plugins.toml includes zsh-syntax-highlighting" {
+    grep -q 'zsh-users/zsh-syntax-highlighting' "$SHELDON_CONFIG_DIR/plugins.toml"
+}
+
+@test "plugins.toml has zsh-syntax-highlighting as the last plugin" {
+    last_plugin=$(grep -E '^\[plugins\.' "$SHELDON_CONFIG_DIR/plugins.toml" | tail -1)
+    [[ "$last_plugin" == *"zsh-syntax-highlighting"* ]]
+}
+
+@test "plugins.toml contains no secrets" {
+    ! grep -qiE '(api_?key|token|password|secret)\s*=' "$SHELDON_CONFIG_DIR/plugins.toml"
+}
+
+# ---------------------------------------------------------------------------
+# dot_zshrc.tmpl source order: sheldon.zsh before completion.zsh
+# ---------------------------------------------------------------------------
+
+@test "dot_zshrc.tmpl sources sheldon.zsh before completion.zsh" {
+    sheldon_line=$(grep -n 'source.*sheldon\.zsh' "$DOT_ZSHRC" | head -1 | cut -d: -f1)
+    completion_line=$(grep -n 'source.*completion\.zsh' "$DOT_ZSHRC" | head -1 | cut -d: -f1)
+    [ -n "$sheldon_line" ] && [ -n "$completion_line" ]
+    [ "$sheldon_line" -lt "$completion_line" ]
+}
+
+# ---------------------------------------------------------------------------
+# chezmoi managed files
+# ---------------------------------------------------------------------------
+
 @test "chezmoi manages .zshrc" {
-    chezmoi init --source "$REPO_ROOT" 2>/dev/null || true
-    chezmoi managed | grep -q '\.zshrc'
+    chezmoi --source "$REPO_ROOT" managed | grep -q '\.zshrc'
 }
 
 @test "chezmoi manages .zshenv" {
-    chezmoi init --source "$REPO_ROOT" 2>/dev/null || true
-    chezmoi managed | grep -q '\.zshenv'
+    chezmoi --source "$REPO_ROOT" managed | grep -q '\.zshenv'
 }
 
 @test "chezmoi manages .zprofile" {
-    chezmoi init --source "$REPO_ROOT" 2>/dev/null || true
-    chezmoi managed | grep -q '\.zprofile'
+    chezmoi --source "$REPO_ROOT" managed | grep -q '\.zprofile'
+}
+
+@test "chezmoi manages .config/sheldon/plugins.toml" {
+    chezmoi --source "$REPO_ROOT" managed | grep -q '\.config/sheldon/plugins\.toml'
 }

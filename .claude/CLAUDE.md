@@ -26,6 +26,8 @@ dotfiles/
 │   ├── dot_config/
 │   │   ├── chezmoi/
 │   │   │   └── private_chezmoi.toml.tmpl # -> ~/.config/chezmoi/chezmoi.toml (0600)
+│   │   ├── sheldon/
+│   │   │   └── plugins.toml              # -> ~/.config/sheldon/plugins.toml
 │   │   └── zsh/
 │   │       ├── history.zsh               # -> ~/.config/zsh/history.zsh
 │   │       ├── completion.zsh            # -> ~/.config/zsh/completion.zsh

@@ -1,0 +1,20 @@
+# ~/.config/sheldon/plugins.toml
+# Managed by chezmoi -- edit source at home/dot_config/sheldon/plugins.toml
+
+shell = "zsh"
+
+[plugins.zsh-autosuggestions]
+github = "zsh-users/zsh-autosuggestions"
+
+[plugins.zsh-completions]
+github = "zsh-users/zsh-completions"
+dir = "src"
+apply = ["fpath"]
+
+[plugins.zsh-history-substring-search]
+github = "zsh-users/zsh-history-substring-search"
+
+# Must be loaded last: zsh-syntax-highlighting wraps ZLE widgets defined by other plugins.
+# Loading it earlier causes those widgets to be wrapped before they exist, breaking them.
+[plugins.zsh-syntax-highlighting]
+github = "zsh-users/zsh-syntax-highlighting"
