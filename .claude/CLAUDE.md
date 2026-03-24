@@ -20,7 +20,7 @@ dotfiles/
 ├── .claude/
 │   └── CLAUDE.md         # This file
 ├── home/                 # chezmoi source root
-│   └── dot_zshrc         # -> ~/.zshrc
+│   └── dot_zshrc.tmpl    # -> ~/.zshrc
 ├── tests/
 │   └── test_zsh.bats     # Shell tests (bats-core)
 └── docs/
