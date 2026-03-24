@@ -8,6 +8,10 @@ Personal dotfiles managed with [chezmoi](https://www.chezmoi.io/).
 - **Tool:** chezmoi (source directory layout with `.chezmoiroot`)
 - **Shell:** zsh with sheldon (plugins), starship (prompt), mise (runtime manager)
 
+> The zsh configuration is the first managed dotfile and serves as a reference implementation.
+> This repository is designed to grow incrementally — git, vim, SSH, and other tool configs
+> will be added over time following the same patterns.
+
 ## Repository Structure
 
 ```
@@ -60,6 +64,14 @@ chezmoi managed             # List all managed files
 chezmoi cd                  # cd to source directory
 chezmoi data                # Show template variables
 ```
+
+## Design Principles
+
+- **Portability** — Support Linux and macOS. Use chezmoi templates (`{{ .chezmoi.os }}`) for platform differences.
+- **Graceful degradation** — Guard every optional tool with `command -v`; missing tools must never break the shell.
+- **Extensibility** — Each tool gets its own file(s) under `home/` and a corresponding test in `tests/`.
+- **Maintainability** — Comment non-obvious settings. Keep templates readable. Tests must stay green.
+- **Generality** — Machine-specific values go in `~/.config/chezmoi/chezmoi.toml`, not hardcoded in source.
 
 ## Development Guidelines
 
