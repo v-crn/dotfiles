@@ -7,8 +7,10 @@
 *.swo
 *~
 
-# chezmoi internal cache
+# chezmoi internal cache and local secrets
 .chezmoicache/
+chezmoi.toml
+.chezmoisecrets*
 
 # Dev environment artifacts (sandbox / IDE)
 /.idea

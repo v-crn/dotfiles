@@ -1,44 +1,13 @@
-# ── History ──────────────────────────────────────────────────────────────────
-HISTFILE=~/.zsh_history
-HISTSIZE=10000
-SAVEHIST=10000
-setopt SHARE_HISTORY HIST_IGNORE_DUPS HIST_REDUCE_BLANKS
+# ── Load modular zsh config ───────────────────────────────────────────────────
+# Explicit source order (not glob) — deterministic loading, no injection risk.
+_zsh_config="${XDG_CONFIG_HOME:-$HOME/.config}/zsh"
 
-# ── Completion ───────────────────────────────────────────────────────────────
-autoload -Uz compinit && compinit
+source "$_zsh_config/history.zsh"
+source "$_zsh_config/completion.zsh"
+source "$_zsh_config/keybindings.zsh"
+source "$_zsh_config/aliases.zsh"
+source "$_zsh_config/mise.zsh"
+source "$_zsh_config/sheldon.zsh"
+source "$_zsh_config/starship.zsh"
 
-# ── Key bindings ─────────────────────────────────────────────────────────────
-bindkey -e                        # Emacs key bindings
-bindkey '^[[A' history-search-backward
-bindkey '^[[B' history-search-forward
-
-# ── Aliases ──────────────────────────────────────────────────────────────────
-if command -v eza &>/dev/null; then
-    alias ls='eza --icons'
-    alias ll='eza -lh --icons --git'
-    alias la='eza -lha --icons --git'
-    alias lt='eza --tree --icons'
-fi
-if command -v bat &>/dev/null; then
-    alias cat='bat --paging=never'
-fi
-
-# ── PATH ─────────────────────────────────────────────────────────────────────
-export PATH="$PATH:$HOME/.local/bin"
-{{ if eq .chezmoi.os "darwin" -}}
-export PATH="/opt/homebrew/bin:/opt/homebrew/sbin:$PATH"
-{{ end }}
-# ── mise ─────────────────────────────────────────────────────────────────────
-if command -v mise &>/dev/null; then
-    eval "$(mise activate zsh)"
-fi
-
-# ── Plugins (sheldon) ────────────────────────────────────────────────────────
-if command -v sheldon &>/dev/null; then
-    eval "$(sheldon source)"
-fi
-
-# ── Prompt (starship) ────────────────────────────────────────────────────────
-if command -v starship &>/dev/null; then
-    eval "$(starship init zsh)"
-fi
+unset _zsh_config

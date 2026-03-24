@@ -15,17 +15,31 @@ Personal dotfiles managed with [chezmoi](https://www.chezmoi.io/).
 
 ```
 dotfiles/
-├── .chezmoiroot          # Points chezmoi source root to "home/"
+├── .chezmoiroot                          # Points chezmoi source root to "home/"
 ├── .gitignore
 ├── .claude/
-│   └── CLAUDE.md         # This file
-├── home/                 # chezmoi source root
-│   └── dot_zshrc.tmpl    # -> ~/.zshrc
+│   └── CLAUDE.md                         # This file
+├── home/                                 # chezmoi source root
+│   ├── dot_zshenv.tmpl                   # -> ~/.zshenv  (all shells: XDG, EDITOR, LANG)
+│   ├── dot_zprofile.tmpl                 # -> ~/.zprofile  (login shells: PATH, Homebrew)
+│   ├── dot_zshrc.tmpl                    # -> ~/.zshrc  (interactive shells: sources config/)
+│   ├── dot_config/
+│   │   ├── chezmoi/
+│   │   │   └── private_chezmoi.toml.tmpl # -> ~/.config/chezmoi/chezmoi.toml (0600)
+│   │   └── zsh/
+│   │       ├── history.zsh               # -> ~/.config/zsh/history.zsh
+│   │       ├── completion.zsh            # -> ~/.config/zsh/completion.zsh
+│   │       ├── keybindings.zsh           # -> ~/.config/zsh/keybindings.zsh
+│   │       ├── aliases.zsh               # -> ~/.config/zsh/aliases.zsh
+│   │       ├── mise.zsh                  # -> ~/.config/zsh/mise.zsh
+│   │       ├── sheldon.zsh               # -> ~/.config/zsh/sheldon.zsh
+│   │       └── starship.zsh              # -> ~/.config/zsh/starship.zsh
+│   └── run_once_set-zsh-config-permissions.sh  # chmod 700 ~/.config/zsh
 ├── tests/
-│   └── test_zsh.bats     # Shell tests (bats-core)
+│   └── test_zsh.bats                     # Shell tests (bats-core)
 └── docs/
     └── dev/
-        └── plan/         # Implementation plans
+        └── plan/                         # Implementation plans
 ```
 
 ## chezmoi File Naming Conventions

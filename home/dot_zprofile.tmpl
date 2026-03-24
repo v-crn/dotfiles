@@ -1,0 +1,7 @@
+# ── PATH ─────────────────────────────────────────────────────────────────────
+export PATH="$PATH:$HOME/.local/bin"
+
+{{ if eq .chezmoi.os "darwin" -}}
+# Homebrew (Apple Silicon). Guard existence to handle pre-Homebrew state.
+[[ -d /opt/homebrew/bin ]] && export PATH="/opt/homebrew/bin:/opt/homebrew/sbin:$PATH"
+{{ end -}}

@@ -1,0 +1,14 @@
+# SECURITY: Sourced for ALL shells (interactive, non-interactive, cron, SSH, scripts).
+# PROHIBITED: eval, echo/printf output, tool activations (mise/sheldon/starship),
+#             umask changes, CDPATH, anything that produces stdout.
+# Only set variables that every shell context genuinely needs.
+
+# ── XDG Base Directory ────────────────────────────────────────────────────────
+export XDG_CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
+export XDG_DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}"
+export XDG_CACHE_HOME="${XDG_CACHE_HOME:-$HOME/.cache}"
+
+# ── Core environment ──────────────────────────────────────────────────────────
+export EDITOR="${EDITOR:-vim}"
+export VISUAL="${VISUAL:-$EDITOR}"
+export LANG="${LANG:-en_US.UTF-8}"
