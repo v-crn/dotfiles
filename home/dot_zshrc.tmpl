@@ -21,12 +21,14 @@ alias cat='bat --paging=never'
 
 # ── PATH ─────────────────────────────────────────────────────────────────────
 export PATH="$PATH:$HOME/.local/bin"
-
+{{ if eq .chezmoi.os "darwin" -}}
+export PATH="/opt/homebrew/bin:/opt/homebrew/sbin:$PATH"
+{{ end -}}
 # ── mise ─────────────────────────────────────────────────────────────────────
 eval "$(mise activate zsh)"
 
 # ── Plugins (sheldon) ────────────────────────────────────────────────────────
-if [ -x "$HOME/.local/bin/sheldon" ]; then
+if command -v sheldon &>/dev/null; then
     eval "$(sheldon source)"
 fi
 

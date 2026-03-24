@@ -3,22 +3,24 @@
 # Run from repository root: bats tests/test_zsh.bats
 
 REPO_ROOT="$(cd "$(dirname "$BATS_TEST_FILENAME")/.." && pwd)"
-DOT_ZSHRC="$REPO_ROOT/home/dot_zshrc"
+CHEZMOI_ROOT="$(cat "$REPO_ROOT/.chezmoiroot" | tr -d '[:space:]')"
+DOT_ZSHRC="$REPO_ROOT/$CHEZMOI_ROOT/dot_zshrc.tmpl"
 
 # ---------------------------------------------------------------------------
 # File existence
 # ---------------------------------------------------------------------------
 
-@test "home/dot_zshrc exists" {
+@test "home/dot_zshrc.tmpl exists" {
     [ -f "$DOT_ZSHRC" ]
 }
 
 # ---------------------------------------------------------------------------
-# Syntax check
+# Syntax check (strip chezmoi template directives before checking)
 # ---------------------------------------------------------------------------
 
-@test "dot_zshrc has no zsh syntax errors" {
-    zsh -n "$DOT_ZSHRC"
+@test "dot_zshrc.tmpl has no zsh syntax errors after stripping templates" {
+    stripped=$(grep -v '{{' "$DOT_ZSHRC")
+    zsh -n <(echo "$stripped")
 }
 
 # ---------------------------------------------------------------------------
@@ -54,11 +56,22 @@ DOT_ZSHRC="$REPO_ROOT/home/dot_zshrc"
 }
 
 # ---------------------------------------------------------------------------
+# Cross-platform: template directives present
+# ---------------------------------------------------------------------------
+
+@test "dot_zshrc uses chezmoi OS template for platform-specific config" {
+    grep -q '\.chezmoi\.os' "$DOT_ZSHRC"
+}
+
+@test "dot_zshrc handles macOS (darwin) branch" {
+    grep -q 'darwin' "$DOT_ZSHRC"
+}
+
+# ---------------------------------------------------------------------------
 # chezmoi managed files
 # ---------------------------------------------------------------------------
 
 @test "chezmoi manages .zshrc" {
-    # Initialize chezmoi with our source directory if not already done
     chezmoi init --source "$REPO_ROOT" 2>/dev/null || true
     chezmoi managed | grep -q '\.zshrc'
 }
