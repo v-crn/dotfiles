@@ -49,8 +49,10 @@ dotfiles/
     │   ├── eza.md
     │   ├── bat.md
     │   └── fzf.md
+    ├── plan/                             # Implementation plans (YYYY-MM-DD-<topic>.md)
+    ├── spec/                             # Specifications
     └── dev/
-        └── plan/                         # Implementation plans
+        └── plan/                         # Legacy plans (migrating to docs/plan/)
 ```
 
 ## chezmoi File Naming Conventions
@@ -96,6 +98,12 @@ chezmoi data                # Show template variables
 - **Extensibility** — Each tool gets its own file(s) under `home/` and a corresponding test in `tests/`.
 - **Maintainability** — Comment non-obvious settings. Keep templates readable. Tests must stay green.
 - **Generality** — Machine-specific values go in `~/.config/chezmoi/chezmoi.toml`, not hardcoded in source.
+
+## Documentation Policy
+
+- ドキュメントは原則日本語で記述する
+- 実装計画は `docs/plan/` にマークダウンファイルで保存する (`YYYY-MM-DD-<topic>.md`)
+- 仕様書は `docs/spec/` にマークダウンファイルで保存する
 
 ## Development Guidelines
 
