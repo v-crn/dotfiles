@@ -181,6 +181,18 @@ ZSH_CONFIG_DIR="$REPO_ROOT/$CHEZMOI_ROOT/dot_config/zsh"
     grep -q 'command -v bat' "$ZSH_CONFIG_DIR/aliases.zsh"
 }
 
+@test "aliases.zsh guards batcat with command -v" {
+    grep -q 'command -v batcat' "$ZSH_CONFIG_DIR/aliases.zsh"
+}
+
+@test "aliases.zsh defines bat alias for batcat" {
+    grep -q "alias bat='batcat'" "$ZSH_CONFIG_DIR/aliases.zsh"
+}
+
+@test "aliases.zsh defines cat alias in batcat branch" {
+    grep -q "alias cat='batcat --paging=never'" "$ZSH_CONFIG_DIR/aliases.zsh"
+}
+
 # ---------------------------------------------------------------------------
 # Modular files — mise.zsh
 # ---------------------------------------------------------------------------
