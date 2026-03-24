@@ -28,14 +28,15 @@ dotfiles/
 │   │   │   └── private_chezmoi.toml.tmpl # -> ~/.config/chezmoi/chezmoi.toml (0600)
 │   │   ├── sheldon/
 │   │   │   └── plugins.toml              # -> ~/.config/sheldon/plugins.toml
-│   │   └── zsh/
-│   │       ├── history.zsh               # -> ~/.config/zsh/history.zsh
-│   │       ├── completion.zsh            # -> ~/.config/zsh/completion.zsh
-│   │       ├── keybindings.zsh           # -> ~/.config/zsh/keybindings.zsh
-│   │       ├── aliases.zsh               # -> ~/.config/zsh/aliases.zsh
-│   │       ├── mise.zsh                  # -> ~/.config/zsh/mise.zsh
-│   │       ├── sheldon.zsh               # -> ~/.config/zsh/sheldon.zsh
-│   │       └── starship.zsh              # -> ~/.config/zsh/starship.zsh
+│   │   ├── zsh/
+│   │   │   ├── history.zsh               # -> ~/.config/zsh/history.zsh
+│   │   │   ├── completion.zsh            # -> ~/.config/zsh/completion.zsh
+│   │   │   ├── keybindings.zsh           # -> ~/.config/zsh/keybindings.zsh
+│   │   │   ├── aliases.zsh               # -> ~/.config/zsh/aliases.zsh
+│   │   │   ├── mise.zsh                  # -> ~/.config/zsh/mise.zsh
+│   │   │   ├── sheldon.zsh               # -> ~/.config/zsh/sheldon.zsh
+│   │   │   └── starship.zsh              # -> ~/.config/zsh/starship.zsh
+│   │   └── starship.toml                 # -> ~/.config/starship.toml
 │   └── run_once_set-zsh-config-permissions.sh  # chmod 700 ~/.config/zsh
 ├── tests/
 │   └── test_zsh.bats                     # Shell tests (bats-core)

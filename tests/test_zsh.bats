@@ -328,3 +328,55 @@ SHELDON_CONFIG_DIR="$REPO_ROOT/$CHEZMOI_ROOT/dot_config/sheldon"
 @test "chezmoi manages .config/sheldon/plugins.toml" {
     chezmoi --source "$REPO_ROOT" managed | grep -q '\.config/sheldon/plugins\.toml'
 }
+
+@test "chezmoi manages .config/starship.toml" {
+    chezmoi --source "$REPO_ROOT" managed | grep -q '\.config/starship\.toml'
+}
+
+# ---------------------------------------------------------------------------
+# starship.toml
+# ---------------------------------------------------------------------------
+
+STARSHIP_CONFIG="$REPO_ROOT/$CHEZMOI_ROOT/dot_config/starship.toml"
+
+@test "dot_config/starship.toml exists" {
+    [ -f "$STARSHIP_CONFIG" ]
+}
+
+@test "starship.toml defines top-level format" {
+    grep -q '^format = ' "$STARSHIP_CONFIG"
+}
+
+@test "starship.toml defines right_format" {
+    grep -q '^right_format = ' "$STARSHIP_CONFIG"
+}
+
+@test "starship.toml includes character module" {
+    grep -q '^\[character\]' "$STARSHIP_CONFIG"
+}
+
+@test "starship.toml includes directory module" {
+    grep -q '^\[directory\]' "$STARSHIP_CONFIG"
+}
+
+@test "starship.toml includes git_branch module" {
+    grep -q '^\[git_branch\]' "$STARSHIP_CONFIG"
+}
+
+@test "starship.toml includes git_status module" {
+    grep -q '^\[git_status\]' "$STARSHIP_CONFIG"
+}
+
+@test "starship.toml disables battery module" {
+    awk '/^\[battery\]/{found=1} found && /disabled/{print; exit}' "$STARSHIP_CONFIG" \
+        | grep -q 'disabled = true'
+}
+
+@test "starship.toml disables aws module" {
+    awk '/^\[aws\]/{found=1} found && /disabled/{print; exit}' "$STARSHIP_CONFIG" \
+        | grep -q 'disabled = true'
+}
+
+@test "starship.toml contains no secrets" {
+    ! grep -qiE '(api_?key|token|password|secret)\s*=' "$STARSHIP_CONFIG"
+}
