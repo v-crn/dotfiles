@@ -101,7 +101,7 @@ chezmoi data                # Show template variables
 
 ## Documentation Policy
 
-- All documents under `docs/` must be written in Japanese
+- Documents under `docs/` are preferably written in Japanese
 - Implementation plans go in `docs/plan/` as Markdown files (`YYYY-MM-DD-<topic>.md`)
 - Specifications go in `docs/spec/` as Markdown files
 
