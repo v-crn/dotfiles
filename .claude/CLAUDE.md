@@ -5,7 +5,7 @@ Personal dotfiles managed with [chezmoi](https://www.chezmoi.io/).
 ## Project Overview
 
 - **Target environment:** WSL2 (Linux) / macOS / Linux Distro / zsh
-- **Tool:** chezmoi (source directory layout with `.chezmoiroot`)
+- **Dotfile Manager:** chezmoi (source directory layout with `.chezmoiroot`)
 - **Shell:** zsh with sheldon (plugins), starship (prompt), mise (runtime manager)
 
 > This repository is designed to grow incrementally — zsh, git, vim, SSH, and other tool configs

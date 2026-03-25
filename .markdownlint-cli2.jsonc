@@ -1,0 +1,11 @@
+{
+    "fix": true,
+    "gitignore": true,
+    "ignores": [],
+    "config": {
+        // Line length is not enforced: docs use Japanese prose and long technical lines.
+        "MD013": false,
+        // Inline HTML is used intentionally in some docs.
+        "MD033": false
+    }
+}
