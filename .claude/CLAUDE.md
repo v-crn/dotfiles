@@ -13,7 +13,7 @@ Personal dotfiles managed with [chezmoi](https://www.chezmoi.io/).
 
 ## Repository Structure
 
-```
+```text
 dotfiles/
 ├── .chezmoiroot                          # Points chezmoi source root to "home/"
 ├── .gitignore
@@ -59,7 +59,7 @@ dotfiles/
 ## chezmoi File Naming Conventions
 
 | Prefix/Suffix     | Effect                                      |
-|-------------------|---------------------------------------------|
+| --- | --- | --- |
 | `dot_` prefix     | Rename to `.` (e.g. `dot_zshrc` → `.zshrc`) |
 | `private_` prefix | Set permissions to 0600                     |
 | `.tmpl` suffix    | Process as Go template                      |
@@ -131,6 +131,7 @@ Template variables are defined in `~/.config/chezmoi/chezmoi.toml`.
 ### Testing
 
 Run all tests:
+
 ```bash
 bats tests/
 ```
@@ -139,7 +140,7 @@ Tests are written with [bats-core](https://github.com/bats-core/bats-core).
 
 ## Commit Conventions
 
-```
+```text
 feat:     add new dotfile
 fix:      fix configuration
 refactor: restructure config
