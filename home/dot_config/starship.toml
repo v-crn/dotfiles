@@ -1,7 +1,6 @@
 "$schema" = 'https://starship.rs/config-schema.json'
 
 format = "$all"
-right_format = ""
 
 [directory]
 style = "blue"
@@ -18,17 +17,13 @@ style = "bright-black"
 [git_status]
 format = "[[(*$conflicted$untracked$modified$staged$renamed$deleted)](218) ($ahead_behind$stashed)]($style)"
 style = "cyan"
-conflicted = '🏳'
-ahead = '🏎💨{count}'
-behind = '⇣${count}'
-diverged = '⇕⇡${ahead_count}⇣${behind_count}'
-up_to_date = '✓'
-untracked = ''
-stashed = '📦'
-modified = ''
-staged = '[++\($count\)](green)'
-renamed = '👅'
-deleted = '🗑'
+conflicted = "​"
+untracked = "​"
+modified = "​"
+staged = "​"
+renamed = "​"
+deleted = "​"
+stashed = "≡"
 
 [git_state]
 format = '\([$state( $progress_current/$progress_total)]($style)\) '
@@ -37,15 +32,3 @@ style = "bright-black"
 [cmd_duration]
 format = "[$duration]($style) "
 style = "yellow"
-
-[python]
-format = "[$virtualenv]($style) "
-style = "bright-black"
-detect_extensions = []
-detect_files = []
-
-[battery]
-disabled = true
-
-[aws]
-disabled = true

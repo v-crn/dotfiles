@@ -322,10 +322,6 @@ STARSHIP_CONFIG="$REPO_ROOT/$CHEZMOI_ROOT/dot_config/starship.toml"
     grep -q '^format = ' "$STARSHIP_CONFIG"
 }
 
-@test "starship.toml defines right_format" {
-    grep -q '^right_format = ' "$STARSHIP_CONFIG"
-}
-
 @test "starship.toml includes character module" {
     grep -q '^\[character\]' "$STARSHIP_CONFIG"
 }
@@ -340,16 +336,6 @@ STARSHIP_CONFIG="$REPO_ROOT/$CHEZMOI_ROOT/dot_config/starship.toml"
 
 @test "starship.toml includes git_status module" {
     grep -q '^\[git_status\]' "$STARSHIP_CONFIG"
-}
-
-@test "starship.toml disables battery module" {
-    awk '/^\[battery\]/{found=1} found && /disabled/{print; exit}' "$STARSHIP_CONFIG" \
-        | grep -q 'disabled = true'
-}
-
-@test "starship.toml disables aws module" {
-    awk '/^\[aws\]/{found=1} found && /disabled/{print; exit}' "$STARSHIP_CONFIG" \
-        | grep -q 'disabled = true'
 }
 
 @test "starship.toml contains no secrets" {
