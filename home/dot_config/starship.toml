@@ -1,6 +1,7 @@
 "$schema" = 'https://starship.rs/config-schema.json'
 
 format = "$all"
+right_format = ""
 
 [directory]
 style = "blue"
@@ -42,3 +43,9 @@ format = "[$virtualenv]($style) "
 style = "bright-black"
 detect_extensions = []
 detect_files = []
+
+[battery]
+disabled = true
+
+[aws]
+disabled = true
