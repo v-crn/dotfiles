@@ -28,40 +28,11 @@ ZSH_CONFIG_DIR="$REPO_ROOT/$CHEZMOI_ROOT/dot_config/zsh"
 }
 
 # ---------------------------------------------------------------------------
-# Content: dot_zshrc is thin entry point sourcing modular files
+# Content: dot_zshrc is thin entry point sourcing modular files via glob
 # ---------------------------------------------------------------------------
 
-@test "dot_zshrc.tmpl sources history.zsh" {
-    grep -q 'history\.zsh' "$DOT_ZSHRC"
-}
-
-@test "dot_zshrc.tmpl sources completion.zsh" {
-    grep -q 'completion\.zsh' "$DOT_ZSHRC"
-}
-
-@test "dot_zshrc.tmpl sources keybindings.zsh" {
-    grep -q 'keybindings\.zsh' "$DOT_ZSHRC"
-}
-
-@test "dot_zshrc.tmpl sources aliases.zsh" {
-    grep -q 'aliases\.zsh' "$DOT_ZSHRC"
-}
-
-@test "dot_zshrc.tmpl sources mise.zsh" {
-    grep -q 'mise\.zsh' "$DOT_ZSHRC"
-}
-
-@test "dot_zshrc.tmpl sources sheldon.zsh" {
-    grep -q 'sheldon\.zsh' "$DOT_ZSHRC"
-}
-
-@test "dot_zshrc.tmpl sources starship.zsh" {
-    grep -q 'starship\.zsh' "$DOT_ZSHRC"
-}
-
-@test "dot_zshrc.tmpl does not use glob source pattern" {
-    # Explicit source calls only — no glob injection risk
-    ! grep -qE 'for .* in .*\*.*\.zsh' "$DOT_ZSHRC"
+@test "dot_zshrc.tmpl uses glob source pattern" {
+    grep -qE 'for .+ in .+\*\.zsh' "$DOT_ZSHRC"
 }
 
 # ---------------------------------------------------------------------------
@@ -146,15 +117,15 @@ ZSH_CONFIG_DIR="$REPO_ROOT/$CHEZMOI_ROOT/dot_config/zsh"
 }
 
 # ---------------------------------------------------------------------------
-# Modular files — completion.zsh
+# Modular files — 60_completion.zsh
 # ---------------------------------------------------------------------------
 
-@test "completion.zsh exists" {
-    [ -f "$ZSH_CONFIG_DIR/completion.zsh" ]
+@test "60_completion.zsh exists" {
+    [ -f "$ZSH_CONFIG_DIR/60_completion.zsh" ]
 }
 
-@test "completion.zsh contains compinit" {
-    grep -q 'compinit' "$ZSH_CONFIG_DIR/completion.zsh"
+@test "60_completion.zsh contains compinit" {
+    grep -q 'compinit' "$ZSH_CONFIG_DIR/60_completion.zsh"
 }
 
 # ---------------------------------------------------------------------------
@@ -163,6 +134,10 @@ ZSH_CONFIG_DIR="$REPO_ROOT/$CHEZMOI_ROOT/dot_config/zsh"
 
 @test "keybindings.zsh exists" {
     [ -f "$ZSH_CONFIG_DIR/keybindings.zsh" ]
+}
+
+@test "keybindings.zsh conditionally binds history-substring-search" {
+    grep -q 'history-substring-search-up' "$ZSH_CONFIG_DIR/keybindings.zsh"
 }
 
 # ---------------------------------------------------------------------------
@@ -206,15 +181,15 @@ ZSH_CONFIG_DIR="$REPO_ROOT/$CHEZMOI_ROOT/dot_config/zsh"
 }
 
 # ---------------------------------------------------------------------------
-# Modular files — sheldon.zsh
+# Modular files — 50_sheldon.zsh
 # ---------------------------------------------------------------------------
 
-@test "sheldon.zsh exists" {
-    [ -f "$ZSH_CONFIG_DIR/sheldon.zsh" ]
+@test "50_sheldon.zsh exists" {
+    [ -f "$ZSH_CONFIG_DIR/50_sheldon.zsh" ]
 }
 
-@test "sheldon.zsh guards sheldon with command -v" {
-    grep -q 'command -v sheldon' "$ZSH_CONFIG_DIR/sheldon.zsh"
+@test "50_sheldon.zsh guards sheldon with command -v" {
+    grep -q 'command -v sheldon' "$ZSH_CONFIG_DIR/50_sheldon.zsh"
 }
 
 # ---------------------------------------------------------------------------
@@ -272,7 +247,7 @@ SHELDON_CONFIG_DIR="$REPO_ROOT/$CHEZMOI_ROOT/dot_config/sheldon"
 }
 
 @test "fzf-tab has apply = [] in plugins.toml" {
-    # fzf-tab must not be sourced by sheldon; it is sourced after compinit in completion.zsh
+    # fzf-tab must not be sourced by sheldon; it is sourced after compinit in 60_completion.zsh
     awk '/\[plugins\.fzf-tab\]/{found=1} found && /apply/{print; exit}' "$SHELDON_CONFIG_DIR/plugins.toml" \
         | grep -q 'apply = \[\]'
 }
@@ -286,27 +261,27 @@ SHELDON_CONFIG_DIR="$REPO_ROOT/$CHEZMOI_ROOT/dot_config/sheldon"
     ! grep -qiE '(api_?key|token|password|secret)\s*=' "$SHELDON_CONFIG_DIR/plugins.toml"
 }
 
-@test "completion.zsh sources fzf-tab conditionally after compinit" {
+@test "60_completion.zsh sources fzf-tab conditionally after compinit" {
     # fzf-tab source must appear after compinit line
-    compinit_line=$(grep -n 'compinit' "$ZSH_CONFIG_DIR/completion.zsh" | head -1 | cut -d: -f1)
-    fzftab_line=$(grep -n 'fzf-tab' "$ZSH_CONFIG_DIR/completion.zsh" | head -1 | cut -d: -f1)
+    compinit_line=$(grep -n 'compinit' "$ZSH_CONFIG_DIR/60_completion.zsh" | head -1 | cut -d: -f1)
+    fzftab_line=$(grep -n 'fzf-tab' "$ZSH_CONFIG_DIR/60_completion.zsh" | head -1 | cut -d: -f1)
     [ -n "$compinit_line" ] && [ -n "$fzftab_line" ]
     [ "$compinit_line" -lt "$fzftab_line" ]
 }
 
-@test "completion.zsh guards fzf-tab with command -v fzf" {
-    grep -q 'command -v fzf' "$ZSH_CONFIG_DIR/completion.zsh"
+@test "60_completion.zsh guards fzf-tab with command -v fzf" {
+    grep -q 'command -v fzf' "$ZSH_CONFIG_DIR/60_completion.zsh"
 }
 
 # ---------------------------------------------------------------------------
-# dot_zshrc.tmpl source order: sheldon.zsh before completion.zsh
+# Load order: 50_sheldon.zsh before 60_completion.zsh (via filename sort)
 # ---------------------------------------------------------------------------
 
-@test "dot_zshrc.tmpl sources sheldon.zsh before completion.zsh" {
-    sheldon_line=$(grep -n 'source.*sheldon\.zsh' "$DOT_ZSHRC" | head -1 | cut -d: -f1)
-    completion_line=$(grep -n 'source.*completion\.zsh' "$DOT_ZSHRC" | head -1 | cut -d: -f1)
-    [ -n "$sheldon_line" ] && [ -n "$completion_line" ]
-    [ "$sheldon_line" -lt "$completion_line" ]
+@test "50_sheldon.zsh sorts before 60_completion.zsh" {
+    # Numeric prefix guarantees correct glob load order
+    [ -f "$ZSH_CONFIG_DIR/50_sheldon.zsh" ]
+    [ -f "$ZSH_CONFIG_DIR/60_completion.zsh" ]
+    [[ "50_sheldon.zsh" < "60_completion.zsh" ]]
 }
 
 # ---------------------------------------------------------------------------

@@ -1,13 +1,9 @@
 # ── Load modular zsh config ───────────────────────────────────────────────────
-# Explicit source order (not glob) — deterministic loading, no injection risk.
+# Glob-source all *.zsh files in config dir. Load order is alphabetical;
+# order-sensitive files use numeric prefixes (50_sheldon, 60_completion).
 _zsh_config="${XDG_CONFIG_HOME:-$HOME/.config}/zsh"
 
-source "$_zsh_config/history.zsh"
-source "$_zsh_config/keybindings.zsh"
-source "$_zsh_config/aliases.zsh"
-source "$_zsh_config/mise.zsh"
-source "$_zsh_config/sheldon.zsh"   # Must precede compinit: sheldon adds fpath entries (e.g. zsh-completions) that compinit must see
-source "$_zsh_config/completion.zsh"
-source "$_zsh_config/starship.zsh"
-
-unset _zsh_config
+for _f in "$_zsh_config"/*.zsh; do
+    source "$_f"
+done
+unset _f _zsh_config

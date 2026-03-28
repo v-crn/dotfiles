@@ -18,37 +18,55 @@
 
 ## zshrc のモジュラー構成
 
-`~/.zshrc` は薄いエントリポイントで、`~/.config/zsh/` 以下のファイルを順番にソースする。
+`~/.zshrc` は薄いエントリポイントで、`~/.config/zsh/*.zsh` を glob でまとめてロードする。ファイルはアルファベット順に読み込まれ、順序制約があるファイルには数字プレフィックスを付けて先頭に固定する。
 
 ```
-history.zsh
-keybindings.zsh
+50_sheldon.zsh   ← fpath にプラグインを追加するため compinit より前
+60_completion.zsh ← compinit 呼び出し + fzf-tab のロード
 aliases.zsh
-mise.zsh
-sheldon.zsh      ← fpath にプラグインを追加するため compinit より前
-completion.zsh   ← compinit 呼び出し + fzf-tab のロード
+dart.zsh
+...（ツール別ファイルはアルファベット順）
+keybindings.zsh  ← sheldon のロード後に実行されるためプラグインの有無を確認可能
+...
 starship.zsh
+xclip.zsh
 ```
 
 ### 読み込み順が重要な箇所
 
-**sheldon.zsh → completion.zsh の順**
-sheldon が `zsh-completions` を fpath に追加する。この処理が `compinit` より前に実行される必要がある。順序が逆だと `zsh-completions` の補完定義が有効にならない。
+**50_sheldon.zsh → 60_completion.zsh の順**
+sheldon が `zsh-completions` を fpath に追加する。この処理が `compinit` より前に実行される必要がある。数字プレフィックスでアルファベット順より前に固定している。
 
-**fzf-tab は completion.zsh 内で compinit の後**
-fzf-tab は zsh の補完システムに割り込む仕組みのため、`compinit` でシステムが初期化された後でなければロードできない。sheldon では `apply = []` にして自動ソースを無効化し、`completion.zsh` の末尾で条件付きで手動ロードしている。
+**keybindings.zsh は sheldon の後**
+keybindings.zsh はロード時に `history-substring-search` ウィジェットの存在を確認し、利用可能なら Up/Down にバインドする。sheldon（50\_）がアルファベット（k）より前にロードされるため、確認が成立する。
+
+**fzf-tab は 60_completion.zsh 内で compinit の後**
+fzf-tab は zsh の補完システムに割り込む仕組みのため、`compinit` でシステムが初期化された後でなければロードできない。sheldon では `apply = []` にして自動ソースを無効化し、`60_completion.zsh` の末尾で条件付きで手動ロードしている。
 
 ## 各モジュールの役割
 
 | ファイル | 役割 |
-|---------|------|
-| `history.zsh` | HISTFILE, HISTSIZE, 重複排除等のヒストリ設定 |
-| `keybindings.zsh` | Emacs キーバインド、Up/Down のヒストリ検索 |
+| --- | --- |
+| `50_sheldon.zsh` | sheldon でプラグインをロード |
+| `60_completion.zsh` | compinit + fzf-tab の条件付きロード |
 | `aliases.zsh` | eza/bat のエイリアス (ツールがなければスキップ) |
+| `dart.zsh` | Dart pub-cache の PATH 追加 |
+| `docker-compose.zsh` | docker compose のエイリアス |
+| `dotnet.zsh` | .NET SDK の PATH 追加 |
+| `flutter.zsh` | Flutter / FVM の PATH 追加 |
+| `git.zsh` | git エイリアス |
+| `golang.zsh` | GOPATH の設定、goenv の初期化 |
+| `google-cloud-sdk.zsh` | gcloud 補完の読み込み |
+| `history.zsh` | HISTFILE, HISTSIZE, 重複排除等のヒストリ設定 |
+| `homebrew.zsh` | Homebrew の PATH 追加 (macOS) |
+| `keybindings.zsh` | Emacs キーバインド、Up/Down のヒストリ検索 |
 | `mise.zsh` | mise の activate (ツールがなければスキップ) |
-| `sheldon.zsh` | sheldon でプラグインをロード + キーバインド上書き |
-| `completion.zsh` | compinit + fzf-tab の条件付きロード |
+| `nvcc.zsh` | CUDA / cuDNN の PATH 追加 |
+| `nvidia-smi.zsh` | nvidia-smi 用 WSL PATH 追加 |
+| `nvim.zsh` | neovim のエイリアス |
+| `rust.zsh` | Cargo の PATH 追加 |
 | `starship.zsh` | starship プロンプトの初期化 |
+| `xclip.zsh` | pbcopy/pbpaste エイリアス (Linux) |
 
 ## 設定を追加・変更する手順
 
@@ -65,4 +83,4 @@ chezmoi apply
 exec zsh
 ```
 
-新しいモジュールファイルを追加する場合は `dot_zshrc.tmpl` の source リストにも追記する。
+新しいモジュールファイルを `~/.config/zsh/` に追加するだけで自動的にロードされる。順序制約がある場合は数字プレフィックスを付ける。

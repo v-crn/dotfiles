@@ -28,14 +28,27 @@ dotfiles/
 │   │   │   └── private_chezmoi.toml.tmpl # -> ~/.config/chezmoi/chezmoi.toml (0600)
 │   │   ├── sheldon/
 │   │   │   └── plugins.toml              # -> ~/.config/sheldon/plugins.toml
-│   │   ├── zsh/
-│   │   │   ├── history.zsh               # -> ~/.config/zsh/history.zsh
-│   │   │   ├── completion.zsh            # -> ~/.config/zsh/completion.zsh
-│   │   │   ├── keybindings.zsh           # -> ~/.config/zsh/keybindings.zsh
+│   │   ├── zsh/                          # Glob-loaded by ~/.zshrc (alphabetical order)
+│   │   │   ├── 50_sheldon.zsh            # -> ~/.config/zsh/50_sheldon.zsh  (loads before completion)
+│   │   │   ├── 60_completion.zsh         # -> ~/.config/zsh/60_completion.zsh (compinit + fzf-tab)
 │   │   │   ├── aliases.zsh               # -> ~/.config/zsh/aliases.zsh
+│   │   │   ├── dart.zsh                  # -> ~/.config/zsh/dart.zsh
+│   │   │   ├── docker-compose.zsh        # -> ~/.config/zsh/docker-compose.zsh
+│   │   │   ├── dotnet.zsh                # -> ~/.config/zsh/dotnet.zsh
+│   │   │   ├── flutter.zsh               # -> ~/.config/zsh/flutter.zsh
+│   │   │   ├── git.zsh                   # -> ~/.config/zsh/git.zsh
+│   │   │   ├── golang.zsh                # -> ~/.config/zsh/golang.zsh
+│   │   │   ├── google-cloud-sdk.zsh      # -> ~/.config/zsh/google-cloud-sdk.zsh
+│   │   │   ├── history.zsh               # -> ~/.config/zsh/history.zsh
+│   │   │   ├── homebrew.zsh              # -> ~/.config/zsh/homebrew.zsh
+│   │   │   ├── keybindings.zsh           # -> ~/.config/zsh/keybindings.zsh
 │   │   │   ├── mise.zsh                  # -> ~/.config/zsh/mise.zsh
-│   │   │   ├── sheldon.zsh               # -> ~/.config/zsh/sheldon.zsh
-│   │   │   └── starship.zsh              # -> ~/.config/zsh/starship.zsh
+│   │   │   ├── nvcc.zsh                  # -> ~/.config/zsh/nvcc.zsh
+│   │   │   ├── nvidia-smi.zsh            # -> ~/.config/zsh/nvidia-smi.zsh
+│   │   │   ├── nvim.zsh                  # -> ~/.config/zsh/nvim.zsh
+│   │   │   ├── rust.zsh                  # -> ~/.config/zsh/rust.zsh
+│   │   │   ├── starship.zsh              # -> ~/.config/zsh/starship.zsh
+│   │   │   └── xclip.zsh                 # -> ~/.config/zsh/xclip.zsh
 │   │   └── starship.toml                 # -> ~/.config/starship.toml
 │   └── run_once_set-zsh-config-permissions.sh  # chmod 700 ~/.config/zsh
 ├── tests/
