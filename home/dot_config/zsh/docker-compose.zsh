@@ -1,0 +1,5 @@
+alias dc="docker compose"
+alias dcb="docker compose build"
+alias dcbn="docker compose build --no-cache"
+alias dcu="docker compose up"
+alias dcud="docker compose up -d"
