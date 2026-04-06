@@ -8,7 +8,7 @@
 
 ## ディレクトリ構造
 
-```
+```text
 home/
   .chezmoiscripts/              # chezmoi スクリプト置き場（~/には展開されない）
     .gitkeep
@@ -32,6 +32,11 @@ home/
   dot_claude/                   # → ~/.claude/
     CLAUDE.md                   # @~/.agents/AGENTS.md に委譲
     settings.json
+  dot_gemini/                   # → ~/.gemini/
+    GEMINI.md                   # @~/.agents/AGENTS.md に委譲
+  dot_cursor/                   # → ~/.cursor/
+    rules/
+      global.mdc.tmpl           # 環境判定でルール内容をインライン生成（@ import 非対応のため）
   dot_config/
     ccstatusline/
       settings.json             # Claude Code ステータスライン設定
@@ -94,13 +99,29 @@ home/
 
 ## ツール別委譲ファイル
 
-各 coding agents ツールは `~/.agents/AGENTS.md` に委譲するだけ。ルールの追加・修正は `~/.agents/` 側のみで完結する。
+`~/.agents/AGENTS.md` を単一の信頼できるソースとし、各ツールがそれを参照する。ルールの追加・修正は `~/.agents/` 側のみで完結する。
 
-| ツール | ファイル | 内容 |
-| --- | --- | --- |
-| Claude Code | `~/.claude/CLAUDE.md` | `@~/.agents/AGENTS.md` |
-| Codex CLI | `~/.agents/AGENTS.md` | 直接参照（追加ファイル不要） |
-| Gemini CLI | `~/.gemini/GEMINI.md` | `@~/.agents/AGENTS.md`（将来追加） |
+| ツール | ファイル | 方式 | 備考 |
+| --- | --- | --- | --- |
+| Claude Code | `~/.claude/CLAUDE.md` | `@~/.agents/AGENTS.md` で委譲 | |
+| Gemini CLI | `~/.gemini/GEMINI.md` | `@~/.agents/AGENTS.md` で委譲 | グローバル設定: `~/.gemini/GEMINI.md` |
+| Codex CLI | `~/.agents/AGENTS.md` | 直接参照 | 追加ファイル不要 |
+| Cursor | `~/.cursor/rules/global.mdc` | chezmoi テンプレートでインライン生成 | `@` import 非対応のため `.mdc` 形式で直接埋め込む |
+
+### Cursor `.mdc` ファイルの構造
+
+Cursor はグローバルルールを `~/.cursor/rules/*.mdc` として読み込む（Cursor 0.45+）。ファイル形式：
+
+```markdown
+---
+description: Global coding rules for all projects
+alwaysApply: true
+---
+
+（ここに ~/.agents/rules/ の内容を chezmoi テンプレートでインライン展開）
+```
+
+`global.mdc.tmpl` は `AGENTS.md.tmpl` と同じ環境判定ロジックを持つが、`@` import の代わりに `{{ includeTemplate }}` 等でルールファイルの内容を直接埋め込む。
 
 ---
 
@@ -135,7 +156,7 @@ workspace = "personal"   # マシンごとに上書き: "work-acme" 等
 
 - `README.md` — 動作環境（任意ツールに coding agents 追記）、リポジトリ構成（`dot_agents/`, `dot_claude/`, `ccstatusline/`, `.chezmoiscripts/` 追記）、詳細ドキュメントリンク追加
 - `.claude/CLAUDE.md` — リポジトリ構造に `dot_agents/`, `dot_claude/`, `ccstatusline/`, `.chezmoiscripts/` を追記
-- `docs/tools/agents.md` — agents 設定の運用ガイドを新規作成（構成・環境判定ルール・ルール追加手順）
+- `docs/tools/agents.md` — agents 設定の運用ガイドを新規作成（構成・環境判定ルール・ルール追加手順・各ツールの委譲方式）
 - `docs/tools/ccstatusline.md` — ccstatusline の設定ファイル場所・カスタマイズ方法を新規作成
 
 ---
