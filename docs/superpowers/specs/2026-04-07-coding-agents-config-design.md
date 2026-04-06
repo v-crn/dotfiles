@@ -133,6 +133,7 @@ workspace = "personal"   # マシンごとに上書き: "work-acme" 等
 
 ## ドキュメント更新対象
 
+- `README.md` — 動作環境（任意ツールに coding agents 追記）、リポジトリ構成（`dot_agents/`, `dot_claude/`, `ccstatusline/`, `.chezmoiscripts/` 追記）、詳細ドキュメントリンク追加
 - `.claude/CLAUDE.md` — リポジトリ構造に `dot_agents/`, `dot_claude/`, `ccstatusline/`, `.chezmoiscripts/` を追記
 - `docs/tools/agents.md` — agents 設定の運用ガイドを新規作成
 
