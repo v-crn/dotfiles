@@ -1,0 +1,3 @@
+# GEMINI
+
+@~/.agents/AGENTS.md
