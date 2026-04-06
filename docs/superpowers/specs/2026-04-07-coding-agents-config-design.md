@@ -135,7 +135,8 @@ workspace = "personal"   # マシンごとに上書き: "work-acme" 等
 
 - `README.md` — 動作環境（任意ツールに coding agents 追記）、リポジトリ構成（`dot_agents/`, `dot_claude/`, `ccstatusline/`, `.chezmoiscripts/` 追記）、詳細ドキュメントリンク追加
 - `.claude/CLAUDE.md` — リポジトリ構造に `dot_agents/`, `dot_claude/`, `ccstatusline/`, `.chezmoiscripts/` を追記
-- `docs/tools/agents.md` — agents 設定の運用ガイドを新規作成
+- `docs/tools/agents.md` — agents 設定の運用ガイドを新規作成（構成・環境判定ルール・ルール追加手順）
+- `docs/tools/ccstatusline.md` — ccstatusline の設定ファイル場所・カスタマイズ方法を新規作成
 
 ---
 
