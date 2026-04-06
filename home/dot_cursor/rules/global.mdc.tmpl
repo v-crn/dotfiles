@@ -23,10 +23,12 @@ alwaysApply: true
 {{ include (printf "dot_agents/rules/workspace/%s.md" .workspace) }}
 {{ end -}}
 
-{{ if lookPath "docker" -}}
+{{ $dockerRules := stat (joinPath .chezmoi.sourceDir "dot_agents/rules/tools/docker.md") -}}
+{{ if and (lookPath "docker") $dockerRules -}}
 {{ include "dot_agents/rules/tools/docker.md" }}
 {{ end -}}
 
-{{ if lookPath "gcloud" -}}
+{{ $gcloudRules := stat (joinPath .chezmoi.sourceDir "dot_agents/rules/tools/gcloud.md") -}}
+{{ if and (lookPath "gcloud") $gcloudRules -}}
 {{ include "dot_agents/rules/tools/gcloud.md" }}
 {{ end -}}
