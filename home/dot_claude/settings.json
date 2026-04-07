@@ -38,6 +38,31 @@
         "superpowers@claude-plugins-official": true,
         "skill-creator@claude-plugins-official": true
     },
+    "hooks": {
+        "PreToolUse": [
+            {
+                "_tag": "ccstatusline-managed",
+                "hooks": [
+                    {
+                        "type": "command",
+                        "command": "npx -y ccstatusline@latest --hook"
+                    }
+                ],
+                "matcher": "Skill"
+            }
+        ],
+        "UserPromptSubmit": [
+            {
+                "_tag": "ccstatusline-managed",
+                "hooks": [
+                    {
+                        "type": "command",
+                        "command": "npx -y ccstatusline@latest --hook"
+                    }
+                ]
+            }
+        ]
+    },
     "permissions": {
         "disableBypassPermissionsMode": "disable",
         "deny": [
