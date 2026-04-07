@@ -1,22 +1,31 @@
 # dotfiles
 
-chezmoi で管理する個人 dotfiles。WSL2 / macOS / Linux で動く zsh 環境と coding agents の共通設定を再現する。
+自分用 dotfiles リポジトリ。
 
-## 動作環境
+- **Target environment:** WSL2 / Linux / macOS
+- **Dotfile Manager:** chezmoi
+- **Shell:** zsh with sheldon (plugins), starship (prompt)
 
-| 必須 | 任意 (なくても起動は壊れない) |
-| --- | --- |
-| zsh | eza, bat / batcat, fzf |
-| chezmoi | mise, sheldon, starship |
-| | Claude Code, Gemini CLI, Cursor (coding agents) |
+## Requirements
 
-## クイックスタート
+### Required
+
+- [chezmoi](https://github.com/twpayne/chezmoi)
+
+### Preferred
+
+- [make](https://github.com/mirror/make)
+- [shellcheck](https://github.com/koalaman/shellcheck)
+- [markdownlint-cli2](https://github.com/DavidAnson/markdownlint-cli2)
+- [lefthook](https://github.com/evilmartians/lefthook)
+
+## Quickstart
 
 ```zsh
-git clone <repo-url> ~/dotfiles
-chezmoi init --source ~/dotfiles
-chezmoi diff          # 変更内容を確認
-chezmoi apply         # 適用
+git clone https://github.com/v-crn/dotfiles
+cd dotfiles
+make diff    # 変更内容を確認
+make apply   # 適用
 ```
 
 sheldon を使う場合はプラグインをダウンロード:
@@ -25,7 +34,7 @@ sheldon を使う場合はプラグインをダウンロード:
 sheldon lock
 ```
 
-## リポジトリ構成
+## Structure
 
 ```text
 dotfiles/
@@ -50,23 +59,22 @@ dotfiles/
 └── docs/                            # 詳細ドキュメント
 ```
 
-## よく使うコマンド
+## Common Commands
 
-```zsh
-chezmoi diff                     # 差分確認
-chezmoi apply                    # 適用
-chezmoi edit ~/.zshrc            # マネージドファイルを編集して適用
-chezmoi add ~/.<file>            # 新しいファイルを管理対象に追加
-chezmoi managed                  # 管理対象ファイル一覧
-chezmoi execute-template < home/dot_agents/AGENTS.md.tmpl  # テンプレート確認
-bats tests/                      # テスト実行
-```
+### make commands
+
+@Makefile 参照
+
+### chezmoi commands
+
+[docs/tools/chezmoi.md](docs/tools/chezmoi.md) 参照
 
 ## 詳細ドキュメント
 
 - [セットアップ](docs/setup.md) — 新規マシンへの手順・トラブルシューティング
 - [zsh 設定](docs/zsh.md) — 読み込み順・各ファイルの役割・設定追加方法
 - ツール
+  - [chezmoi](docs/tools/chezmoi.md) — dotfiles 管理
   - [agents](docs/tools/agents.md) — Coding agents 共通ルール管理
   - [ccstatusline](docs/tools/ccstatusline.md) — Claude Code ステータスライン
   - [sheldon](docs/tools/sheldon.md) — Shell プラグインマネージャ
