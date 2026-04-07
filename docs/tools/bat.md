@@ -18,7 +18,7 @@ sudo apt install bat
 `aliases.zsh` で定義済み。どちらもない場合は標準の `cat` が使われる。
 
 | 環境 | 設定されるエイリアス |
-|------|---------------------|
+| --- | --- |
 | `bat` が使える | `cat='bat --paging=never'` |
 | `batcat` が使える | `bat='batcat'`, `cat='batcat --paging=never'` |
 

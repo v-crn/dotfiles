@@ -118,7 +118,9 @@ fi
 if [ ! -f "$TARGET" ]; then
     mkdir -p "$(dirname "$TARGET")"
     TMP=$(mktemp "${TARGET}.tmp.XXXXXX")
-    printf '%s\n' "$DESIRED" > "$TMP" && mv "$TMP" "$TARGET" || { rm -f "$TMP"; exit 1; }
+    if ! { printf '%s\n' "$DESIRED" > "$TMP" && mv "$TMP" "$TARGET"; }; then
+        rm -f "$TMP"; exit 1
+    fi
     exit 0
 fi
 
@@ -152,10 +154,12 @@ MERGED=$(printf '%s' "$CURRENT" | jq --argjson d "$DESIRED" '
   )
 ')
 
-if [ $? -ne 0 ] || [ -z "$MERGED" ]; then
+if [ -z "$MERGED" ]; then
     echo "Error: jq failed to process $TARGET. Aborting merge." >&2
     exit 1
 fi
 
 TMP=$(mktemp "${TARGET}.tmp.XXXXXX")
-printf '%s\n' "$MERGED" > "$TMP" && mv "$TMP" "$TARGET" || { rm -f "$TMP"; exit 1; }
+if ! { printf '%s\n' "$MERGED" > "$TMP" && mv "$TMP" "$TARGET"; }; then
+    rm -f "$TMP"; exit 1
+fi

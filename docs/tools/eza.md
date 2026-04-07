@@ -17,7 +17,7 @@ sudo apt install eza
 `aliases.zsh` で定義済み。eza がインストールされていなければ標準の `ls` が使われる。
 
 | エイリアス | 展開 |
-|-----------|------|
+| --- | --- |
 | `ls` | `eza --icons` |
 | `ll` | `eza -lh --icons --git` |
 | `la` | `eza -lha --icons --git` |

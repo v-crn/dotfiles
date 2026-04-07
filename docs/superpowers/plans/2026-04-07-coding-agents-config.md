@@ -34,6 +34,7 @@
 ### Task 1: `.chezmoiscripts/` の整備とスクリプト移動
 
 **Files:**
+
 - Create: `home/.chezmoiscripts/.gitkeep`
 - Move: `home/run_once_set-zsh-config-permissions.sh` → `home/.chezmoiscripts/run_once_set-zsh-config-permissions.sh`
 - Delete: `home/run_once_set-zsh-config-permissions.sh`
@@ -78,6 +79,7 @@ git commit -m "refactor: move scripts to .chezmoiscripts per chezmoi convention"
 ### Task 2: 空ディレクトリに `.gitkeep` を追加
 
 **Files:**
+
 - Create: `home/dot_agents/rules/macos/.gitkeep`
 - Create: `home/dot_agents/rules/tools/.gitkeep`
 - Create: `home/dot_agents/rules/workspace/.gitkeep`
@@ -104,10 +106,12 @@ git commit -m "chore: add .gitkeep for future rules directories"
 ### Task 3: `AGENTS.md` をテンプレート化
 
 **Files:**
+
 - Delete: `home/dot_agents/AGENTS.md`
 - Create: `home/dot_agents/AGENTS.md.tmpl`
 
 **背景:**
+
 - `chezmoi.kernel.osrelease` は Linux カーネルのバージョン文字列（例: `5.15.90.1-microsoft-standard-WSL2`）。WSL2 では `"microsoft"` を含む
 - `lookPath` は `$PATH` からコマンドを探す chezmoi/sprig 組み込み関数。見つからない場合は空文字を返す
 - `darwin` セクションは現時点でルールファイルが未存在のためコメントアウト
@@ -116,7 +120,7 @@ git commit -m "chore: add .gitkeep for future rules directories"
 
 `home/dot_agents/AGENTS.md` を削除し、`home/dot_agents/AGENTS.md.tmpl` を以下の内容で作成する:
 
-```
+```markdown
 # AGENTS
 
 # --- Common rules (always applied) ---
@@ -182,6 +186,7 @@ git commit -m "feat: convert AGENTS.md to chezmoi template with env detection"
 ### Task 4: `CLAUDE.md` パス修正 と `GEMINI.md` 作成
 
 **Files:**
+
 - Edit: `home/dot_claude/CLAUDE.md`
 - Create: `home/dot_gemini/GEMINI.md`
 
@@ -219,6 +224,7 @@ git commit -m "fix: correct CLAUDE.md import path and add GEMINI.md delegation"
 ### Task 5: Cursor `global.mdc.tmpl` の作成
 
 **Files:**
+
 - Create: `home/dot_cursor/rules/global.mdc.tmpl`
 
 **背景:** Cursor は `~/.cursor/rules/*.mdc` をグローバルルールとして読み込む（Cursor 0.45+）。`.mdc` は YAML frontmatter + Markdown 形式で `@` import 未対応。chezmoi の `include` 関数でルールファイルの内容を直接展開する。`include` のパスは chezmoi ソースルート（`home/` ディレクトリ）からの相対パス。
@@ -227,7 +233,7 @@ git commit -m "fix: correct CLAUDE.md import path and add GEMINI.md delegation"
 
 `home/dot_cursor/rules/global.mdc.tmpl` を以下の内容で新規作成する:
 
-```
+```markdown
 ---
 description: Global coding rules for all projects
 alwaysApply: true
@@ -292,6 +298,7 @@ git commit -m "feat: add Cursor global rules template with inline rule expansion
 ### Task 6: `private_chezmoi.toml.tmpl` に `workspace` 変数を追加
 
 **Files:**
+
 - Edit: `home/dot_config/chezmoi/private_chezmoi.toml.tmpl`
 
 - [ ] **Step 1: `workspace` 変数を追加**
@@ -336,6 +343,7 @@ git commit -m "feat: add workspace variable to chezmoi.toml template"
 ### Task 7: `README.md` の更新
 
 **Files:**
+
 - Edit: `README.md`
 
 - [ ] **Step 1: `README.md` を更新**
@@ -442,6 +450,7 @@ git commit -m "docs: update README with coding agents and new structure"
 ### Task 8: `.claude/CLAUDE.md` のリポジトリ構造を更新
 
 **Files:**
+
 - Edit: `.claude/CLAUDE.md`
 
 - [ ] **Step 1: Repository Structure セクションを更新**
@@ -512,6 +521,7 @@ git commit -m "docs: update CLAUDE.md repository structure for agents config"
 ### Task 9: `docs/tools/agents.md` の作成
 
 **Files:**
+
 - Create: `docs/tools/agents.md`
 
 - [ ] **Step 1: `agents.md` を作成**
@@ -607,6 +617,7 @@ git commit -m "docs: add coding agents setup guide"
 ### Task 10: `docs/tools/ccstatusline.md` の作成
 
 **Files:**
+
 - Create: `docs/tools/ccstatusline.md`
 
 - [ ] **Step 1: `ccstatusline.md` を作成**

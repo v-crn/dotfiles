@@ -17,14 +17,14 @@ chezmoi の通常ファイルとして `settings.json` を管理すると、`che
 
 ### 変更前
 
-```
+```text
 home/dot_claude/
   settings.json
 ```
 
 ### 変更後
 
-```
+```text
 home/dot_claude/
   run_apply-claude-settings.sh     # マージスクリプト（chezmoi apply のたびに実行）
 ```
@@ -35,7 +35,7 @@ home/dot_claude/
 
 `chezmoi apply` のたびに `run_apply-claude-settings.sh` が実行される。
 
-```
+```text
 ~/.claude/settings.json が存在しない
   → desired settings をそのまま書き込んで終了
 

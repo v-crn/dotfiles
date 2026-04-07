@@ -16,7 +16,7 @@ curl --proto '=https' -fLsS https://rossmacarthur.github.io/install/crate.sh \
 ## 現在のプラグイン
 
 | プラグイン | 用途 |
-|-----------|------|
+| --- | --- |
 | zsh-autosuggestions | 入力中にヒストリから候補を薄字表示 (→ で確定) |
 | zsh-completions | 各種ツールの補完定義を追加 |
 | zsh-autopair | 括弧・クォートを自動で閉じる |

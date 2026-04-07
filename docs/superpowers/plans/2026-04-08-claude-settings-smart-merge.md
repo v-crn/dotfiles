@@ -10,9 +10,10 @@
 
 ---
 
-### Task 1: Create the merge script
+## Task 1: Create the merge script
 
 **Files:**
+
 - Create: `home/dot_claude/run_apply-claude-settings.sh`
 
 - [ ] **Step 1: Write the script**
@@ -194,9 +195,10 @@ Expected: `-rwxr-xr-x` (execute bit set)
 
 ---
 
-### Task 2: Delete the old settings.json
+## Task 2: Delete the old settings.json
 
 **Files:**
+
 - Delete: `home/dot_claude/settings.json`
 
 - [ ] **Step 1: Remove the file**
@@ -209,9 +211,10 @@ Expected output: `rm 'home/dot_claude/settings.json'`
 
 ---
 
-### Task 3: Write bats tests
+## Task 3: Write bats tests
 
 **Files:**
+
 - Create: `tests/test_claude_settings.bats`
 
 - [ ] **Step 1: Write the test file**
@@ -392,7 +395,7 @@ Expected: script existence tests fail (file not yet created).
 
 ---
 
-### Task 4: Verify and commit
+## Task 4: Verify and commit
 
 - [ ] **Step 1: Run all tests**
 
@@ -410,6 +413,7 @@ diff <(jq -S . ~/.claude/settings.json) <(jq -S . ~/.claude/settings.json)
 ```
 
 Manually inspect `~/.claude/settings.json` and confirm:
+
 - `language` is `"Japanese"`
 - `enabledPlugins` is preserved
 - `hooks` is preserved

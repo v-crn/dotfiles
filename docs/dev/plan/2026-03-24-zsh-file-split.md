@@ -21,7 +21,7 @@ MEDIUM findings shaped the final plan (see Security Decisions below).
 ## zsh Startup File Roles
 
 | File | Loaded when | Purpose |
-|------|-------------|---------|
+| --- | --- | --- |
 | `~/.zshenv` | Every shell (login, interactive, script, cron, SSH) | Essential env vars only |
 | `~/.zprofile` | Login shells only (before `.zshrc`) | Login-time setup (Homebrew PATH) |
 | `~/.zshrc` | Interactive shells only | Sources modular config files |
@@ -31,7 +31,7 @@ MEDIUM findings shaped the final plan (see Security Decisions below).
 
 ## Target Structure
 
-```
+```text
 home/
 ├── dot_zshenv.tmpl                     → ~/.zshenv
 ├── dot_zprofile.tmpl                   → ~/.zprofile
@@ -76,6 +76,7 @@ export LANG="${LANG:-en_US.UTF-8}"
 ```
 
 **Prohibited content (enforced by bats test):**
+
 - `eval`
 - `echo` / `printf` (breaks SSH scp/rsync/sftp)
 - Tool activations (`mise`, `sheldon`, `starship`)
@@ -122,6 +123,7 @@ unset _zsh_config
 
 **Security decision — no glob source:** `for f in ~/.config/zsh/*.zsh; do source "$f"; done`
 was rejected. Reasons:
+
 1. Any file written to `~/.config/zsh/` (by a package manager hook, symlink, etc.) would
    execute at shell startup with full user privileges.
 2. Glob ordering is filesystem-dependent; explicit ordering avoids subtle initialization bugs.
@@ -132,6 +134,7 @@ was rejected. Reasons:
 Each file is self-contained and guards optional tools with `command -v`.
 
 **`history.zsh`:**
+
 ```zsh
 HISTFILE=~/.zsh_history
 HISTSIZE=10000
@@ -140,11 +143,13 @@ setopt SHARE_HISTORY HIST_IGNORE_DUPS HIST_REDUCE_BLANKS HIST_IGNORE_SPACE
 ```
 
 **`completion.zsh`:**
+
 ```zsh
 autoload -Uz compinit && compinit
 ```
 
 **`keybindings.zsh`:**
+
 ```zsh
 bindkey -e
 bindkey '^[[A' history-search-backward
@@ -152,6 +157,7 @@ bindkey '^[[B' history-search-forward
 ```
 
 **`aliases.zsh`:**
+
 ```zsh
 if command -v eza &>/dev/null; then
     alias ls='eza --icons'
@@ -165,6 +171,7 @@ fi
 ```
 
 **`mise.zsh` / `sheldon.zsh` / `starship.zsh`:**
+
 ```zsh
 # Each follows the same pattern:
 if command -v <tool> &>/dev/null; then
@@ -195,7 +202,7 @@ This plan incorporates the following changes from the initial proposal based on 
 security review:
 
 | Finding | Severity | Resolution |
-|---------|----------|-----------|
+| --- | --- | --- |
 | Glob source allows file injection | HIGH | Replaced with explicit ordered `source` calls |
 | `.zshenv` has no content policy | HIGH | Added prohibited-content comment + bats test |
 | `chezmoi.toml` `private_` doesn't protect git source | HIGH | Documented: no secrets in `.tmpl`; boolean flags only |
@@ -212,6 +219,7 @@ security review:
 chezmoi creates directories with umask-derived permissions (typically `755`).
 
 Fix: add `home/run_once_set-zsh-config-permissions.sh`:
+
 ```zsh
 #!/usr/bin/env zsh
 chmod 700 "${XDG_CONFIG_HOME:-$HOME/.config}/zsh"
@@ -264,6 +272,7 @@ chezmoi runs `run_once_` scripts exactly once (tracked by content hash).
 ## Implementation Phases
 
 ### Phase 1 — New files
+
 1. Create `dot_zshenv.tmpl`
 2. Create `dot_zprofile.tmpl` (move PATH + macOS block from current `dot_zshrc.tmpl`)
 3. Rewrite `dot_zshrc.tmpl` to explicit source calls only
@@ -272,19 +281,21 @@ chezmoi runs `run_once_` scripts exactly once (tracked by content hash).
 6. Create `run_once_set-zsh-config-permissions.sh`
 
 ### Phase 2 — Tests
-7. Update `tests/test_zsh.bats` — migrate existing tests, add new ones listed above
+
+1. Update `tests/test_zsh.bats` — migrate existing tests, add new ones listed above
 
 ### Phase 3 — Cleanup
-8. Remove content from `dot_zshrc.tmpl` that has been moved
-9. Update `CLAUDE.md` repository structure diagram
-10. Commit
+
+1. Remove content from `dot_zshrc.tmpl` that has been moved
+2. Update `CLAUDE.md` repository structure diagram
+3. Commit
 
 ---
 
 ## Risks
 
 | Risk | Mitigation |
-|------|-----------|
+| --- | --- |
 | `chezmoi.toml.tmpl` managed by chezmoi creates bootstrap dependency | First-time setup requires manual creation of `~/.config/chezmoi/chezmoi.toml` or accepting defaults from template |
 | `run_once_` script runs only once — permission fix not re-applied if reverted | Document; add bats test to verify permissions |
 | Modular file load errors fail silently if source file missing | chezmoi manages all files; absence implies chezmoi not applied |

@@ -15,13 +15,13 @@ curl -sS https://starship.rs/install.sh | sh
 ## dotfiles での管理ファイル
 
 | ファイル | 役割 |
-|---------|------|
+| --- | --- |
 | `home/dot_config/zsh/starship.zsh` | `eval "$(starship init zsh)"` を実行。starship がなければ何もしない。 |
 | `home/dot_config/starship.toml` | プロンプトの見た目・モジュール設定 |
 
 ## プロンプトレイアウト
 
-```
+```text
 ~/projects/app  main +2 ~1  v20.11  3s
 ❯
                                   14:32:05  (右プロンプト)
@@ -39,7 +39,7 @@ curl -sS https://starship.rs/install.sh | sh
 ## 有効モジュール
 
 | モジュール | 表示条件 | 内容 |
-|-----------|---------|------|
+| --- | --- | --- |
 | `username` | SSH または root 時のみ | ユーザー名 |
 | `hostname` | SSH 時のみ | ホスト名 |
 | `directory` | 常時 | 最大4階層、短縮表示あり |
@@ -99,4 +99,4 @@ $character"""
 symbol = " "
 ```
 
-利用可能なモジュール一覧: https://starship.rs/config/
+利用可能なモジュール一覧: <https://starship.rs/config/>

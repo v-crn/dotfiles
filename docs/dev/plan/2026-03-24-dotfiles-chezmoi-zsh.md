@@ -31,7 +31,7 @@ Starting with zsh-related dotfiles.
 
 ## Repository Layout (Target)
 
-```
+```text
 /workspace/dotfiles/
 ├── .chezmoiroot          # content: "home"
 ├── .gitignore
@@ -50,7 +50,7 @@ Starting with zsh-related dotfiles.
 ### chezmoi File Naming Conventions
 
 | Prefix/Suffix | Meaning |
-|---------------|---------|
+| --- | --- |
 | `dot_` prefix | Rename to `.` (e.g. `dot_zshrc` → `.zshrc`) |
 | `private_` prefix | Set permissions to 0600 |
 | `.tmpl` suffix | Process as Go template |
@@ -63,6 +63,7 @@ Starting with zsh-related dotfiles.
 ### Phase 1: `.claude/CLAUDE.md` Creation
 
 Create `/workspace/dotfiles/.claude/CLAUDE.md` with:
+
 - Project overview
 - Repository structure
 - chezmoi commands reference
@@ -72,7 +73,7 @@ Create `/workspace/dotfiles/.claude/CLAUDE.md` with:
 ### Phase 2: chezmoi Initialization and zsh Dotfiles
 
 | Step | Action |
-|------|--------|
+| --- | --- |
 | 1 | `git init` in `/workspace/dotfiles` |
 | 2 | Create `.gitignore` (exclude `.zsh_history`, etc.) |
 | 3 | Create `.chezmoiroot` with content `home` |
@@ -86,6 +87,7 @@ Create `/workspace/dotfiles/.claude/CLAUDE.md` with:
 ### Phase 3: Tests and Verification (bats-core)
 
 Create `tests/test_zsh.bats` with:
+
 - `dot_zshrc` file exists
 - No syntax errors (`zsh -n`)
 - Required sections present (History, Completion, PATH)
@@ -96,7 +98,7 @@ Create `tests/test_zsh.bats` with:
 ## Risks
 
 | Risk | Impact | Mitigation |
-|------|--------|------------|
+| --- | --- | --- |
 | `chezmoi apply` overwrites and breaks existing `.zshrc` | High | Always run `chezmoi diff` and `chezmoi apply -n` before applying |
 | `.chezmoiroot` misconfiguration causes missing source | Medium | Verify immediately with `chezmoi managed` |
 | bats not installed | Low | Assumed managed via mise; install if missing |
