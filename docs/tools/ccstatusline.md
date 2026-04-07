@@ -50,6 +50,15 @@ chezmoi ソース: `home/dot_config/ccstatusline/settings.json`
 
 ## 設定のカスタマイズ
 
+### ccstatusline の設定画面を呼び出す方法
+
+```bash
+# Run the configuration TUI with npm
+npx -y ccstatusline@latest
+```
+
+### `settings.json` を直接編集する方法
+
 `settings.json` を編集後、`chezmoi apply` で `~/.config/ccstatusline/settings.json` に反映する:
 
 ```zsh
