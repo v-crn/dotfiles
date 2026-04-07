@@ -55,7 +55,6 @@ dotfiles/
 │       ├── sheldon/plugins.toml     # → ~/.config/sheldon/plugins.toml
 │       └── zsh/                     # → ~/.config/zsh/*.zsh
 ├── tests/
-│   └── test_zsh.bats                # bats-core によるシェルテスト
 └── docs/                            # 詳細ドキュメント
 ```
 
@@ -63,11 +62,11 @@ dotfiles/
 
 ### make commands
 
-@Makefile 参照
+Read @Makefile
 
 ### chezmoi commands
 
-[docs/tools/chezmoi.md](docs/tools/chezmoi.md) 参照
+Read [docs/tools/chezmoi.md](docs/tools/chezmoi.md)
 
 ## 詳細ドキュメント
 

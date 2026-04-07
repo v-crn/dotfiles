@@ -10,9 +10,8 @@
 └── rules/
     ├── common/        # 常時適用ルール
     ├── wsl/           # WSL 固有ルール
-    ├── macos/         # macOS 固有ルール（将来）
-    ├── tools/         # ツール別ルール（将来）
-    └── workspace/     # ワークスペース別ルール（将来）
+    ├── macos/         # macOS 固有ルール
+    └── workspace/     # ワークスペース別ルール
 ```
 
 ## 各ツールの参照方式

@@ -1,6 +1,6 @@
 # chezmoi
 
-[chezmoi](https://www.chezmoi.io/) は、複数のマシン間で dotfiles を管理するためのツールです。
+chezmoi は、複数のマシン間で dotfiles を管理するためのツールです。
 
 ## chezmoi File Naming Conventions
 
