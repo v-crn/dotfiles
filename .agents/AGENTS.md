@@ -26,17 +26,17 @@ Read `docs/tools/chezmoi.md` if you need further details about chezmoi.
 
 ### Workflow (TDD-first)
 
-1.  **Requirement Confirmation**: Clarify requirements with the user and confirm the implementation plan.
-2.  **Red (Write a failing test)**: Create or update a test file in `tests/` (using `bats`) that fails without the new change.
-3.  **Green (Implement)**: Edit the source files (e.g., in `home/`) to make the test pass.
-4.  **Refactor**: Clean up the code while ensuring tests remain green.
-5.  **Validation & Preview**:
-    -   Run all tests: `make test`
-    -   Preview changes: `make diff`
-6.  **User Confirmation**: Show the test results and diff to the user, and **ask for confirmation** before proceeding to apply or commit.
-7.  **Apply & Commit**:
-    -   Apply changes: `make apply` (if requested)
-    -   Commit changes following the conventions below.
+1. **Requirement Confirmation**: Clarify requirements with the user and confirm the implementation plan.
+2. **Red (Write a failing test)**: Create or update a test file in `tests/` (using `bats`) that fails without the new change.
+3. **Green (Implement)**: Edit the source files (e.g., in `home/`) to make the test pass.
+4. **Refactor**: Clean up the code while ensuring tests remain green.
+5. **Validation & Preview**:
+    - Run all tests: `make test`
+    - Preview changes: `make diff`
+6. **User Confirmation**: Show the test results and diff to the user, and **ask for confirmation** before proceeding to apply or commit.
+7. **Apply & Commit**:
+    - Apply changes: `make apply` (if requested)
+    - Commit changes following the conventions below.
 
 ### Templates
 
