@@ -1,3 +1,3 @@
-# CLAUDE
+# GEMINI
 
 @.agents/AGENTS.md
