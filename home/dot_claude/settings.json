@@ -1,0 +1,92 @@
+{
+    "env": {
+        "MAX_THINKING_TOKENS": "10000",
+        "CLAUDE_AUTOCOMPACT_PCT_OVERRIDE": "50",
+        "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1"
+    },
+    "language": "Japanese",
+    "statusLine": {
+        "type": "command",
+        "command": "npx -y ccstatusline@latest",
+        "padding": 0
+    },
+    "sandbox": {
+        "enabled": true,
+        "autoAllowBashIfSandboxed": true,
+        "excludedCommands": [
+            "git",
+            "docker"
+        ],
+        "network": {
+            "allowedHosts": [
+                "api.github.com",
+                "api.anthropic.com",
+                "claude.ai",
+                "claude.com",
+                "platform.claude.com",
+                "mcp-proxy.anthropic.com",
+                "http-intake.logs.us5.datadoghq.com",
+                "context7.com",
+                "generativelanguage.googleapis.com",
+                "api.tavily.com",
+                "auth.tavily.com"
+            ]
+        }
+    },
+    "enableAllProjectMcpServers": false,
+    "enabledPlugins": {
+        "superpowers@claude-plugins-official": true,
+        "skill-creator@claude-plugins-official": true
+    },
+    "permissions": {
+        "disableBypassPermissionsMode": "disable",
+        "deny": [
+            "Read(.env)",
+            "Bash(sudo *)",
+            "Bash(git push --force *)",
+            "Bash(git reset --hard *)"
+        ],
+        "allow": [
+            "Read(.env.example)",
+            "WebFetch(domain:api.github.com)",
+            "WebFetch(domain:api.anthropic.com)",
+            "WebFetch(domain:mcp-proxy.anthropic.com)",
+            "WebFetch(domain:http-intake.logs.us5.datadoghq.com)",
+            "WebFetch(domain:context7.com)",
+            "WebFetch(domain:github.com)",
+            "WebFetch(domain:pypi.org)",
+            "Bash(markdownlint-cli2 *)",
+            "Bash(grep:*)",
+            "Bash(hadolint *)",
+            "Bash(shellcheck *)",
+            "Bash(bats:*)",
+            "WebFetch",
+            "WebSearch",
+            "Bash(echo *)",
+            "Bash(which *)",
+            "Bash(ls *)",
+            "Bash(wc *)",
+            "Bash(jq *)",
+            "Bash(git status)",
+            "Bash(git diff *)",
+            "Bash(git log *)",
+            "Bash(git branch *)",
+            "Bash(git switch *)",
+            "Bash(git add *)",
+            "Bash(git commit *)",
+            "Bash(git stash *)",
+            "Bash(git show *)",
+            "Bash(git rev-parse *)",
+            "Bash(git merge-base *)",
+            "Bash(git fetch *)",
+            "Bash(git pull *)",
+            "Bash(gh issue *)",
+            "Bash(gh pr view *)",
+            "Bash(gh pr list *)",
+            "Bash(gh pr checks *)",
+            "Bash(gh api *)",
+            "Bash(gemini *)",
+            "Bash(tvly *)"
+        ]
+    }
+}
