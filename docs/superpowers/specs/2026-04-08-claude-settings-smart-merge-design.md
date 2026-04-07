@@ -50,20 +50,15 @@ home/dot_claude/
 | `env` | dotfiles で上書き | dotfiles が正 |
 | `language` | dotfiles で上書き | dotfiles が正 |
 | `statusLine` | dotfiles で上書き | dotfiles が正 |
-| `sandbox`（スカラー・`excludedCommands`） | dotfiles で上書き | dotfiles が正 |
+| `sandbox`（スカラー） | dotfiles で上書き | dotfiles が正 |
+| `sandbox.excludedCommands` | union（重複なし） | ローカル追加を保持 |
 | `sandbox.network.allowedHosts` | union（重複なし） | ローカル追加を保持 |
 | `enableAllProjectMcpServers` | dotfiles で上書き | dotfiles が正 |
-| `enabledPlugins` | 既存を優先・dotfiles の新規キーを追加 | ツール自動管理の状態と乖離させない |
+| `enabledPlugins` | 処理しない（dotfiles から削除） | 設定だけ追加しても意味がないため |
 | `hooks` | 既存をそのまま保持、dotfiles に値があれば挿入 | ccstatusline 等の自動管理 hooks を尊重 |
 | `permissions.disableBypassPermissionsMode` | dotfiles で上書き | dotfiles が正 |
 | `permissions.allow` | union（重複なし） | ローカル追加を保持 |
 | `permissions.deny` | union（重複なし） | ローカル追加を保持 |
-
-### `enabledPlugins` の詳細
-
-- 既存に存在するキーはそのまま保持（true/false 問わず）
-- dotfiles にあって既存にないキーのみ追加
-- dotfiles にないキーは削除しない
 
 ### `hooks` の詳細
 
@@ -85,7 +80,6 @@ DESIRED=$(cat <<'EOF'
   "statusLine": { ... },
   "sandbox": { ... },
   "enableAllProjectMcpServers": false,
-  "enabledPlugins": { ... },
   "hooks": {},
   "permissions": { ... }
 }
