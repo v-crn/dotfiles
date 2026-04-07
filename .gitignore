@@ -1,3 +1,6 @@
+# local files
+**.local.**
+
 # ZSH history
 .zsh_history
 
@@ -16,12 +19,6 @@ chezmoi.toml
 /.idea
 /.vscode
 /.mcp.json
-
-# Claude Code runtime files (not project config)
-.claude/agents
-.claude/commands
-.claude/settings.local.json
-.claude/skills
 
 # Dotfiles that belong in home/ (not repo root)
 # These may appear as sandbox device files in some environments

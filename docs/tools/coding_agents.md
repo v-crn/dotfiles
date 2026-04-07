@@ -32,8 +32,6 @@
 | --- | --- | --- |
 | WSL 環境 | `chezmoi.kernel.osrelease` に `"microsoft"` を含む | `rules/wsl/coding-style.md` |
 | 非 personal ワークスペース | `workspace != "personal"`（`chezmoi.toml` で設定） | `rules/workspace/<name>.md` |
-| docker インストール済み | `lookPath "docker"` | `rules/tools/docker.md` |
-| gcloud インストール済み | `lookPath "gcloud"` | `rules/tools/gcloud.md` |
 
 ## ワークスペース設定
 

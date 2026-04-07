@@ -18,11 +18,3 @@
 {{ if and (hasKey . "workspace") (ne .workspace "personal") -}}
 - @~/.agents/rules/workspace/{{ .workspace }}.md
 {{ end -}}
-
-# --- Tool specific (auto-detected) ---
-{{ if lookPath "docker" -}}
-- @~/.agents/rules/tools/docker.md
-{{ end -}}
-{{ if lookPath "gcloud" -}}
-- @~/.agents/rules/tools/gcloud.md
-{{ end -}}

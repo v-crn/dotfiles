@@ -13,7 +13,12 @@ sudo apt install zsh
 sh -c "$(curl -fsLS get.chezmoi.io)"
 ```
 
-## 新規マシンへの手順
+## ソースディレクトリ
+
+default: `~/.local/share/chezmoi`
+コマンドオプションで指定: `--source $CHEZMOI_SOURCE_DIR`
+
+## 新規マシンへの適用手順
 
 ### 1. リポジトリを clone して chezmoi を初期化
 
@@ -43,8 +48,9 @@ $EDITOR ~/.config/chezmoi/chezmoi.toml
 ### 3. 差分を確認して適用
 
 ```zsh
-chezmoi diff     # 変更内容を確認
-chezmoi apply    # 適用
+CHEZMOI_SOURCE_DIR=~/dotfiles
+chezmoi diff --source $CHEZMOI_SOURCE_DIR    # 変更内容を確認
+chezmoi apply --source $CHEZMOI_SOURCE_DIR    # 適用
 ```
 
 ### 4. sheldon プラグインをダウンロード
@@ -66,8 +72,9 @@ exec zsh
 ```zsh
 cd ~/dotfiles
 git pull
-chezmoi diff
-chezmoi apply
+CHEZMOI_SOURCE_DIR=~/dotfiles
+chezmoi diff --source $CHEZMOI_SOURCE_DIR
+chezmoi apply --source $CHEZMOI_SOURCE_DIR
 ```
 
 ## トラブルシューティング
