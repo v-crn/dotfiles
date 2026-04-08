@@ -1,20 +1,20 @@
 # AGENTS
 
-# --- Common rules (always applied) ---
-- @~/.agents/rules/common/language-policy.md
-- @~/.agents/rules/common/markdown-linting.md
-- @~/.agents/rules/common/preferred-tools.md
-- @~/.agents/rules/common/privacy-policy.md
-- @~/.agents/rules/common/web-search.md
+{{/* Common rules */ -}}
+@~/.agents/rules/common/language-policy.md
+@~/.agents/rules/common/markdown-linting.md
+@~/.agents/rules/common/preferred-tools.md
+@~/.agents/rules/common/privacy-policy.md
+@~/.agents/rules/common/web-search.md
 
-# --- OS / Environment specific ---
+{{/* OS / Environment specific */ -}}
 {{ if eq .chezmoi.os "linux" -}}
 {{   if contains "microsoft" .chezmoi.kernel.osrelease -}}
-- @~/.agents/rules/wsl/coding-style.md
+@~/.agents/rules/wsl/coding-style.md
 {{   end -}}
 {{ end -}}
 
-# --- Workspace specific ---
+{{/* Workspace specific */ -}}
 {{ if and (hasKey . "workspace") (ne .workspace "personal") -}}
-- @~/.agents/rules/workspace/{{ .workspace }}.md
+@~/.agents/rules/workspace/{{ .workspace }}.md
 {{ end -}}
