@@ -17,7 +17,8 @@ DESIRED=$(cat <<'EOF'
     "env": {
         "MAX_THINKING_TOKENS": "12000",
         "CLAUDE_AUTOCOMPACT_PCT_OVERRIDE": "60",
-        "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1"
+        "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1",
+        "VERCEL_PLUGIN_TELEMETRY": "off"
     },
     "language": "Japanese",
     "statusLine": {
