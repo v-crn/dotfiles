@@ -1,3 +1,1 @@
-# CLAUDE
-
 @~/.agents/AGENTS.md
