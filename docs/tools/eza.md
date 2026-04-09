@@ -14,7 +14,7 @@ sudo apt install eza
 
 ## dotfiles でのエイリアス
 
-`aliases.zsh` で定義済み。eza がインストールされていなければ標準の `ls` が使われる。
+`eza.zsh` で定義済み。eza がインストールされていなければ標準の `ls` が使われる。
 
 | エイリアス | 展開 |
 | --- | --- |
