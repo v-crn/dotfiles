@@ -5,11 +5,13 @@
 # After sourcing, $PLATFORM is set and exported.
 
 _detect_platform() {
-    if [ "$(uname -s 2>/dev/null)" = "Darwin" ]; then
+    local kernel
+    kernel="$(uname -s 2>/dev/null)"
+    if [ "$kernel" = "Darwin" ]; then
         echo "macos"
     elif [ -n "${WSL_DISTRO_NAME:-}" ]; then
         echo "wsl"
-    elif [ "$(uname -s 2>/dev/null)" = "Linux" ]; then
+    elif [ "$kernel" = "Linux" ]; then
         echo "linux"
     else
         echo "unknown"

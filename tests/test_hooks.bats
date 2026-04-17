@@ -29,3 +29,8 @@ PLATFORM_SH="$HOOKS_DIR/lib/platform.sh"
     run bash -c "uname() { echo Linux; }; export -f uname; unset WSL_DISTRO_NAME; . '$PLATFORM_SH'; echo \$PLATFORM"
     [ "$output" = "linux" ]
 }
+
+@test "platform.sh: returns unknown on unrecognized uname output" {
+    run bash -c "uname() { echo SunOS; }; export -f uname; unset WSL_DISTRO_NAME; . '$PLATFORM_SH'; echo \$PLATFORM"
+    [ "$output" = "unknown" ]
+}
