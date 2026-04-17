@@ -78,7 +78,7 @@ if [ "$TOOL_NAME" = "Bash" ]; then
     # Block: destructive rm targeting root, home, or filesystem root glob
     # Match: rm -rf / (end), rm -rf / (space after), rm -rf /*, rm -rf ~
     case "$COMMAND" in
-        *"rm -rf ~"* | *"rm -rf /*"*)
+        *"rm -rf ~"* | *"rm -rf /*"* | *"rm -rf ."*)
             printf 'Blocked: destructive rm detected. Command: %s\n' "$COMMAND" >&2
             exit 2
             ;;

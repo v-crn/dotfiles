@@ -179,6 +179,11 @@ run_hook() {
     [ "$status" -eq 2 ]
 }
 
+@test "pre-tool-use.sh: blocks rm -rf ." {
+    run run_hook '{"tool_name":"Bash","tool_input":{"command":"rm -rf ."}}'
+    [ "$status" -eq 2 ]
+}
+
 @test "pre-tool-use.sh: allows safe rm" {
     run run_hook '{"tool_name":"Bash","tool_input":{"command":"rm -rf /tmp/mydir"}}'
     [ "$status" -eq 0 ]
