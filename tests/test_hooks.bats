@@ -301,6 +301,7 @@ STOP_SH="$HOOKS_DIR/stop.sh"
     "
     [ "$status" -eq 0 ]
     [ -f "$CALLS" ]
+    grep -q "Claude Code" "$CALLS"
     rm -rf "$MOCK_DIR"
 }
 

@@ -15,6 +15,9 @@ if [ "$(printf '%s' "$INPUT" | jq -r '.stop_hook_active // false')" = "true" ]; 
 fi
 
 SESSION_ID="$(printf '%s' "$INPUT" | jq -r '.session_id // empty')"
+if [ -z "$SESSION_ID" ]; then
+    exit 0
+fi
 MARKER_FILE="${TMPDIR:-/tmp}/claude-last-stop-${SESSION_ID}"
 
 NOW="$(date +%s)"
