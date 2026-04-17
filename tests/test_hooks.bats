@@ -165,6 +165,21 @@ run_hook() {
     [ "$status" -eq 0 ]
 }
 
+@test "pre-tool-use.sh: allows Read of .envrc (direnv config)" {
+    run run_hook '{"tool_name":"Read","tool_input":{"file_path":"/project/.envrc"}}'
+    [ "$status" -eq 0 ]
+}
+
+@test "pre-tool-use.sh: blocks Edit of .env" {
+    run run_hook '{"tool_name":"Edit","tool_input":{"file_path":"/project/.env"}}'
+    [ "$status" -eq 2 ]
+}
+
+@test "pre-tool-use.sh: blocks Write of .env" {
+    run run_hook '{"tool_name":"Write","tool_input":{"file_path":"/project/.env"}}'
+    [ "$status" -eq 2 ]
+}
+
 # ---------------------------------------------------------------------------
 # pre-tool-use.sh — Bash: destructive rm
 # ---------------------------------------------------------------------------
@@ -232,6 +247,11 @@ run_hook() {
     [ "$status" -eq 2 ]
 }
 
+@test "pre-tool-use.sh: blocks source .env" {
+    run run_hook '{"tool_name":"Bash","tool_input":{"command":"source .env"}}'
+    [ "$status" -eq 2 ]
+}
+
 # ---------------------------------------------------------------------------
 # pre-tool-use.sh — Bash: warnings (exit 0)
 # ---------------------------------------------------------------------------
@@ -239,7 +259,7 @@ run_hook() {
 @test "pre-tool-use.sh: allows sudo with warning in stderr" {
     run run_hook '{"tool_name":"Bash","tool_input":{"command":"sudo apt-get update"}}'
     [ "$status" -eq 0 ]
-    echo "$stderr" | grep -qi "warning" || echo "$output" | grep -qi "warning" || true
+    echo "$output" | grep -qi "warning"
 }
 
 @test "pre-tool-use.sh: allows pipe to bash with warning" {

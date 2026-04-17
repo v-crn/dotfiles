@@ -42,12 +42,12 @@ is_safe_env_file() {
 }
 
 # is_env_file PATH_OR_BASENAME
-# Returns 0 if the basename starts with .env
+# Returns 0 if the basename is exactly .env or starts with .env.
 is_env_file() {
     local base
     base="$(basename "$1")"
     case "$base" in
-        .env*) return 0 ;;
+        .env | .env.*) return 0 ;;
         *) return 1 ;;
     esac
 }
@@ -101,7 +101,7 @@ if [ "$TOOL_NAME" = "Bash" ]; then
     # Block: reading .env files via shell read commands
     # Check for read-type commands that reference .env files
     case "$COMMAND" in
-        cat\ * | less\ * | more\ * | head\ * | tail\ * | grep\ *)
+        cat\ * | less\ * | more\ * | head\ * | tail\ * | grep\ * | source\ * | .\ *)
             # Extract .env* token(s) from the command
             ENV_REF="$(printf '%s' "$COMMAND" | grep -oE '\.env[a-zA-Z0-9._-]*' | head -1)"
             if [ -n "$ENV_REF" ] && ! is_safe_env_file "$ENV_REF"; then
