@@ -275,3 +275,108 @@ run_hook() {
     run run_hook '{"tool_name":"WebFetch","tool_input":{"url":"https://example.com"}}'
     [ "$status" -eq 0 ]
 }
+
+NOTIFICATION_SH="$HOOKS_DIR/notification.sh"
+STOP_SH="$HOOKS_DIR/stop.sh"
+
+# ---------------------------------------------------------------------------
+# notification.sh
+# ---------------------------------------------------------------------------
+
+@test "notification.sh: exists and is executable" {
+    [ -f "$NOTIFICATION_SH" ]
+    [ -x "$NOTIFICATION_SH" ]
+}
+
+@test "notification.sh: calls send_notification on valid input" {
+    MOCK_DIR="$(mktemp -d)"
+    CALLS="$MOCK_DIR/calls.log"
+    printf '#!/bin/bash\necho "$@" >> "%s"\n' "$CALLS" > "$MOCK_DIR/notify-send"
+    chmod +x "$MOCK_DIR/notify-send"
+
+    run bash -c "
+        export PATH=\"$MOCK_DIR:\$PATH\"
+        export WSL_DISTRO_NAME=Ubuntu
+        printf '{}' | bash '$NOTIFICATION_SH'
+    "
+    [ "$status" -eq 0 ]
+    [ -f "$CALLS" ]
+    rm -rf "$MOCK_DIR"
+}
+
+# ---------------------------------------------------------------------------
+# stop.sh
+# ---------------------------------------------------------------------------
+
+@test "stop.sh: exists and is executable" {
+    [ -f "$STOP_SH" ]
+    [ -x "$STOP_SH" ]
+}
+
+@test "stop.sh: exits 0 immediately when stop_hook_active is true" {
+    run bash -c "printf '{\"stop_hook_active\":true,\"session_id\":\"test-guard\"}' | bash '$STOP_SH'"
+    [ "$status" -eq 0 ]
+}
+
+@test "stop.sh: does not notify on first call (creates marker only)" {
+    MOCK_DIR="$(mktemp -d)"
+    CALLS="$MOCK_DIR/calls.log"
+    printf '#!/bin/bash\necho "$@" >> "%s"\n' "$CALLS" > "$MOCK_DIR/notify-send"
+    chmod +x "$MOCK_DIR/notify-send"
+
+    SESSION="test-session-first-$$"
+    run bash -c "
+        export TMPDIR=\"$MOCK_DIR\"
+        export PATH=\"$MOCK_DIR:\$PATH\"
+        export WSL_DISTRO_NAME=Ubuntu
+        printf '{\"stop_hook_active\":false,\"session_id\":\"$SESSION\"}' | bash '$STOP_SH'
+    "
+    [ "$status" -eq 0 ]
+    # notify-send should NOT have been called (first call just writes marker)
+    [ ! -f "$CALLS" ] || [ ! -s "$CALLS" ]
+    rm -rf "$MOCK_DIR"
+}
+
+@test "stop.sh: notifies when elapsed time >= 10 seconds" {
+    MOCK_DIR="$(mktemp -d)"
+    CALLS="$MOCK_DIR/calls.log"
+    printf '#!/bin/bash\necho "$@" >> "%s"\n' "$CALLS" > "$MOCK_DIR/notify-send"
+    chmod +x "$MOCK_DIR/notify-send"
+
+    SESSION="test-session-elapsed-$$"
+    # Write a marker with a timestamp 15 seconds in the past
+    PAST=$(( $(date +%s) - 15 ))
+    printf '%s\n' "$PAST" > "$MOCK_DIR/claude-last-stop-$SESSION"
+
+    run bash -c "
+        export TMPDIR=\"$MOCK_DIR\"
+        export PATH=\"$MOCK_DIR:\$PATH\"
+        export WSL_DISTRO_NAME=Ubuntu
+        printf '{\"stop_hook_active\":false,\"session_id\":\"$SESSION\"}' | bash '$STOP_SH'
+    "
+    [ "$status" -eq 0 ]
+    [ -f "$CALLS" ] && [ -s "$CALLS" ]
+    rm -rf "$MOCK_DIR"
+}
+
+@test "stop.sh: does not notify when elapsed time < 10 seconds" {
+    MOCK_DIR="$(mktemp -d)"
+    CALLS="$MOCK_DIR/calls.log"
+    printf '#!/bin/bash\necho "$@" >> "%s"\n' "$CALLS" > "$MOCK_DIR/notify-send"
+    chmod +x "$MOCK_DIR/notify-send"
+
+    SESSION="test-session-fast-$$"
+    # Write a marker just 2 seconds ago
+    RECENT=$(( $(date +%s) - 2 ))
+    printf '%s\n' "$RECENT" > "$MOCK_DIR/claude-last-stop-$SESSION"
+
+    run bash -c "
+        export TMPDIR=\"$MOCK_DIR\"
+        export PATH=\"$MOCK_DIR:\$PATH\"
+        export WSL_DISTRO_NAME=Ubuntu
+        printf '{\"stop_hook_active\":false,\"session_id\":\"$SESSION\"}' | bash '$STOP_SH'
+    "
+    [ "$status" -eq 0 ]
+    [ ! -f "$CALLS" ] || [ ! -s "$CALLS" ]
+    rm -rf "$MOCK_DIR"
+}
