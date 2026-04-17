@@ -1,5 +1,8 @@
 # local files
-**.local.**
+**/*.local
+**/*.local.*
+**/.env
+**/.env.*
 
 # ZSH history
 .zsh_history
