@@ -26,7 +26,6 @@ PLATFORM_SH="$HOOKS_DIR/lib/platform.sh"
 }
 
 @test "platform.sh: returns linux on plain Linux without WSL" {
-    run bash -c "unset WSL_DISTRO_NAME; . '$PLATFORM_SH'; echo \$PLATFORM"
-    # In this Docker/Linux container with no WSL_DISTRO_NAME, should be linux
-    [ "$output" = "linux" ] || [ "$output" = "wsl" ]
+    run bash -c "uname() { echo Linux; }; export -f uname; unset WSL_DISTRO_NAME; . '$PLATFORM_SH'; echo \$PLATFORM"
+    [ "$output" = "linux" ]
 }
