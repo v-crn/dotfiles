@@ -32,7 +32,12 @@ DESIRED=$(cat <<'EOF'
         "autoAllowBashIfSandboxed": true,
         "excludedCommands": [
             "git",
-            "docker"
+            "docker",
+            "jq",
+            "yq",
+            "shellcheck",
+            "bats",
+            "markdownlint-cli2"
         ],
         "network": {
             "allowedHosts": [
@@ -105,11 +110,7 @@ DESIRED=$(cat <<'EOF'
     "hooks": {
         "PreToolUse": [
             {
-                "matcher": "Bash",
-                "hooks": [{"type": "command", "command": "~/.claude/hooks/pre-tool-use.sh"}]
-            },
-            {
-                "matcher": "Read|Edit|Write",
+                "matcher": "Bash|Read|Edit|MultiEdit|Write",
                 "hooks": [{"type": "command", "command": "~/.claude/hooks/pre-tool-use.sh"}]
             }
         ],
