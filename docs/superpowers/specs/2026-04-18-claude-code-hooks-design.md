@@ -91,8 +91,40 @@ Reads JSON from stdin, extracts `tool_name` and `tool_input` with `jq`.
 | --- | --- |
 | Destructive delete | `rm -rf /`, `rm -rf ~`, `rm -rf /*`, `rm -rf .` at repo root |
 | DB destruction | `DROP TABLE`, `DROP DATABASE` (case-insensitive) |
-| Sensitive file access | File path matches `\.env$` (for Read/Edit/Write tools) |
-| Sensitive file via Bash | `cat .env`, `cat *.env`, `less .env`, etc. |
+| Sensitive file access | File path matches `.env` secret pattern (for Read/Edit/Write tools) — see allow-list below |
+| Sensitive file via Bash | `cat`, `less`, `more`, `head`, `tail`, `grep` on `.env` secret pattern files |
+
+**`.env` file matching logic:**
+
+Explicit enumeration cannot cover all naming conventions (`.env.local`, `.env.stg`, `.env.prod.local`, `.env.local.stg`, etc.). Instead, use a **keyword-based allowlist**: split the basename on `.` and check each segment.
+
+Algorithm:
+
+```text
+1. basename starts with ".env"?  → no  → not a .env file, skip
+2. any segment (split by ".") is a safe keyword?  → yes → ALLOW
+3. otherwise → BLOCK
+```
+
+Safe keywords (segments that indicate template/example, not real secrets):
+
+```text
+example  template  sample  default  dist  schema
+```
+
+Examples:
+
+| Filename | Segments | Result |
+| --- | --- | --- |
+| `.env` | `[env]` | BLOCK |
+| `.env.local` | `[env, local]` | BLOCK |
+| `.env.stg` | `[env, stg]` | BLOCK |
+| `.env.prod.local` | `[env, prod, local]` | BLOCK |
+| `.env.local.stg` | `[env, local, stg]` | BLOCK |
+| `.env.example` | `[env, example]` | ALLOW |
+| `.env.template` | `[env, template]` | ALLOW |
+| `.env.example.local` | `[env, example, local]` | ALLOW |
+| `.env.local.example` | `[env, local, example]` | ALLOW |
 
 Note: `git reset --hard` and `git push --force` are already in the global deny list (`permissions.deny`), so they are not duplicated here.
 
@@ -100,7 +132,7 @@ Note: `git reset --hard` and `git push --force` are already in the global deny l
 
 | Category | Patterns |
 | --- | --- |
-| sudo | command contains `sudo ` |
+| sudo | command contains `sudo` |
 | Pipe to shell | `curl \| bash`, `wget \| sh`, `curl \| sh` patterns |
 
 ### Output format
@@ -171,7 +203,7 @@ The merge strategy for `hooks` in `run_apply-claude-settings.sh`: **overwrite** 
 
 - No logging hooks — `~/.claude/history.jsonl` already covers this.
 - No Windows / PowerShell notification — WSL is always running in this environment.
-- Hook scripts are POSIX sh compatible (no bash-isms beyond `[[ ]]`) for portability.
+- Hook scripts target bash (`#!/bin/bash`); bash-isms kept minimal for portability.
 - `jq` is a hard dependency (already assumed in `run_apply-claude-settings.sh`).
 - Scripts must be idempotent and exit quickly; no blocking I/O.
 
