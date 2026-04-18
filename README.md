@@ -40,9 +40,10 @@ sheldon lock
 dotfiles/
 ├── home/                            # chezmoi ソースルート (.chezmoiroot)
 │   ├── .chezmoiscripts/             # chezmoi スクリプト (~/には展開されない)
-│   ├── dot_agents/                  # → ~/.agents/  (coding agents 共通ルール)
+│   ├── dot_agents/                  # → ~/.agents/  (coding agents 共通ルール・スキル)
 │   │   ├── AGENTS.md.tmpl           # 環境判定で動的生成
-│   │   └── rules/                   # ルールファイル群
+│   │   ├── rules/                   # ルールファイル群
+│   │   └── skills/                  # 共有スキル（chezmoi apply でリンクを自動作成）
 │   ├── dot_claude/                  # → ~/.claude/  (Claude Code 設定)
 │   │   ├── hooks/                   # Claude Code hooks（セキュリティ・通知）
 │   │   └── run_apply-claude-settings.sh  # settings.json 生成スクリプト
@@ -76,7 +77,7 @@ Read [docs/tools/chezmoi.md](docs/tools/chezmoi.md)
 - [zsh 設定](docs/zsh.md) — 読み込み順・各ファイルの役割・設定追加方法
 - ツール
   - [chezmoi](docs/tools/chezmoi.md) — dotfiles 管理
-  - [agents](docs/tools/agents.md) — Coding agents 共通ルール管理
+  - [coding_agents](docs/tools/coding_agents.md) — Coding agents 共通ルール・スキル管理
   - [ccstatusline](docs/tools/ccstatusline.md) — Claude Code ステータスライン
   - [claude_code_hooks](docs/tools/claude_code_hooks.md) — Claude Code hooks（セキュリティ・通知）
   - [sheldon](docs/tools/sheldon.md) — Shell プラグインマネージャ
