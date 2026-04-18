@@ -11,20 +11,19 @@ TOOL_NAME="$(printf '%s' "$INPUT" | jq -r '.tool_name // empty')"
 # .env file helpers
 # ---------------------------------------------------------------------------
 
-# is_safe_env_file PATH_OR_BASENAME
-# Returns 0 (safe/allow) if any dot-separated segment is a safe keyword.
-# Returns 1 (unsafe/block) otherwise.
-is_safe_env_file() {
+# is_sensitive_env_file PATH_OR_BASENAME
+# Returns 0 (block) if the file is a sensitive .env file.
+# Matches exactly ".env" or ".env.<something>" (dot-separated).
+# Files like ".envrc" (no dot separator) are NOT matched and pass through.
+# A matched file is sensitive when none of its dot-separated segments
+# is a safe keyword: example template sample default dist schema
+is_sensitive_env_file() {
     local base
     base="$(basename "$1")"
-
-    # Must start with .env to be relevant
     case "$base" in
-        .env*) ;;
+        .env | .env.*) ;;
         *) return 1 ;;
     esac
-
-    # Strip leading dot, split by '.', check each segment
     local stripped="${base#.}"
     local old_IFS="$IFS"
     IFS='.'
@@ -34,22 +33,11 @@ is_safe_env_file() {
     for segment; do
         case "$segment" in
             example|template|sample|default|dist|schema)
-                return 0  # safe keyword found
+                return 1  # safe keyword found — allow
                 ;;
         esac
     done
-    return 1  # no safe keyword → block
-}
-
-# is_env_file PATH_OR_BASENAME
-# Returns 0 if the basename is exactly .env or starts with .env.
-is_env_file() {
-    local base
-    base="$(basename "$1")"
-    case "$base" in
-        .env | .env.*) return 0 ;;
-        *) return 1 ;;
-    esac
+    return 0  # no safe keyword — block
 }
 
 # ---------------------------------------------------------------------------
@@ -59,7 +47,7 @@ is_env_file() {
 case "$TOOL_NAME" in
     Read|Edit|Write)
         FILE_PATH="$(printf '%s' "$INPUT" | jq -r '.tool_input.file_path // empty')"
-        if [ -n "$FILE_PATH" ] && is_env_file "$FILE_PATH" && ! is_safe_env_file "$FILE_PATH"; then
+        if [ -n "$FILE_PATH" ] && is_sensitive_env_file "$FILE_PATH"; then
             printf 'Blocked: %s is a sensitive .env file. Use .env.example (or similar) for templates.\n' \
                 "$(basename "$FILE_PATH")" >&2
             exit 2
@@ -104,7 +92,7 @@ if [ "$TOOL_NAME" = "Bash" ]; then
         cat\ * | less\ * | more\ * | head\ * | tail\ * | grep\ * | source\ * | .\ *)
             # Extract .env* token(s) from the command
             ENV_REF="$(printf '%s' "$COMMAND" | grep -oE '\.env[a-zA-Z0-9._-]*' | head -1)"
-            if [ -n "$ENV_REF" ] && ! is_safe_env_file "$ENV_REF"; then
+            if [ -n "$ENV_REF" ] && is_sensitive_env_file "$ENV_REF"; then
                 printf 'Blocked: reading sensitive env file via shell: %s\n' "$ENV_REF" >&2
                 exit 2
             fi
