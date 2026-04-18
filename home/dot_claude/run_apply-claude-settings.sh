@@ -33,6 +33,9 @@ DESIRED=$(cat <<'EOF'
         "excludedCommands": [
             "git",
             "docker",
+            "jq",
+            "yq",
+            "shellcheck",
             "bats",
             "markdownlint-cli2"
         ],
