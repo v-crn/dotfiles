@@ -45,7 +45,7 @@ is_sensitive_env_file() {
 # ---------------------------------------------------------------------------
 
 case "$TOOL_NAME" in
-    Read|Edit|Write)
+    Read|Edit|MultiEdit|Write)
         FILE_PATH="$(printf '%s' "$INPUT" | jq -r '.tool_input.file_path // empty')"
         if [ -n "$FILE_PATH" ] && is_sensitive_env_file "$FILE_PATH"; then
             printf 'Blocked: %s is a sensitive .env file. Use .env.example (or similar) for templates.\n' \
