@@ -1,8 +1,17 @@
 ---
 name: ctx7-read-official-docs
 description: |
-  Retrieves up-to-date official documentation, API references, and code examples for any developer technology with Context7 CLI (ctx7). Use this skill whenever you need to know details about a specific library, framework, SDK, CLI tool, or cloud service. Always use for: API syntax questions, configuration options, version migration issues, "how do I" questions mentioning a library name, debugging that involves library-specific behavior, setup instructions, and CLI tool usage. Do not rely on your memory for API details, signatures, or configuration options as they are frequently outdated. Prefer ctx7 over web search for library documentation and API details.
+  Retrieves up-to-date official documentation, API references, and code examples using the Context7 CLI (`ctx7`). Use this skill whenever you need to know details about a specific library, framework, SDK, CLI tool, or cloud service. Always use for: API syntax questions, configuration options, version migration issues, "how do I" questions mentioning a library name, debugging that involves library-specific behavior, setup instructions, and CLI tool usage. Do not rely on your memory for API details, signatures, or configuration options as they are frequently outdated. Prefer ctx7 over web search for library documentation and API details.
 ---
+
+## Setup
+
+Make sure the command is available.
+If `ctx7` is not found, you can run directly without installing:
+
+```bash
+npx ctx7@latest <command>
+```
 
 ## Workflow
 
