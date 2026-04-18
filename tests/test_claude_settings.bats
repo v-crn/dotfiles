@@ -48,10 +48,16 @@ teardown() {
     [ "$output" = "false" ]
 }
 
-@test "new install: does not include hooks" {
+@test "new install: includes desired hooks" {
     "$SCRIPT"
     run jq 'has("hooks")' "$HOME/.claude/settings.json"
-    [ "$output" = "false" ]
+    [ "$output" = "true" ]
+    run jq '.hooks | has("PreToolUse")' "$HOME/.claude/settings.json"
+    [ "$output" = "true" ]
+    run jq '.hooks | has("Notification")' "$HOME/.claude/settings.json"
+    [ "$output" = "true" ]
+    run jq '.hooks | has("Stop")' "$HOME/.claude/settings.json"
+    [ "$output" = "true" ]
 }
 
 # ---------------------------------------------------------------------------
@@ -133,17 +139,22 @@ teardown() {
     [ "$output" = "true" ]
 }
 
-@test "merge: preserves existing hooks" {
+@test "merge: unions existing hooks with desired hooks per event" {
     cat > "$HOME/.claude/settings.json" <<'EOF'
 {
     "hooks": {
-        "PreToolUse": [{"_tag": "ccstatusline-managed", "type": "command", "command": "npx ccstatusline"}]
+        "PreToolUse": [{"matcher":"Skill","hooks":[{"type":"command","command":"npx ccstatusline"}]}],
+        "UserPromptSubmit": [{"hooks":[{"type":"command","command":"npx ccstatusline --hook"}]}]
     }
 }
 EOF
     "$SCRIPT"
+    # Desired PreToolUse entries are added; existing Skill entry is preserved
     run jq '.hooks.PreToolUse | length' "$HOME/.claude/settings.json"
-    [ "$output" = "1" ]
+    [ "$output" -ge 2 ]
+    # UserPromptSubmit (not in DESIRED) is preserved
+    run jq '.hooks | has("UserPromptSubmit")' "$HOME/.claude/settings.json"
+    [ "$output" = "true" ]
 }
 
 # ---------------------------------------------------------------------------

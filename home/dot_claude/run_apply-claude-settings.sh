@@ -7,7 +7,8 @@
 #               permissions.disableBypassPermissionsMode
 #   Union:      sandbox.excludedCommands, sandbox.network.allowedHosts,
 #               permissions.allow, permissions.deny
-#   Preserve:   hooks, enabledPlugins (not present in desired — kept from existing)
+#   Preserve:   enabledPlugins (not present in desired — kept from existing)
+#   Union/event: hooks (desired events merged into existing; other events preserved)
 
 # -----------------------------------------------------------------------
 # Desired settings (edit this section to update settings)
@@ -100,6 +101,29 @@ DESIRED=$(cat <<'EOF'
             "Bash(gemini *)",
             "Bash(tvly *)"
         ]
+    },
+    "hooks": {
+        "PreToolUse": [
+            {
+                "matcher": "Bash",
+                "hooks": [{"type": "command", "command": "~/.claude/hooks/pre-tool-use.sh"}]
+            },
+            {
+                "matcher": "Read|Edit|Write",
+                "hooks": [{"type": "command", "command": "~/.claude/hooks/pre-tool-use.sh"}]
+            }
+        ],
+        "Notification": [
+            {
+                "matcher": "",
+                "hooks": [{"type": "command", "command": "~/.claude/hooks/notification.sh"}]
+            }
+        ],
+        "Stop": [
+            {
+                "hooks": [{"type": "command", "command": "~/.claude/hooks/stop.sh"}]
+            }
+        ]
     }
 }
 EOF
@@ -129,7 +153,19 @@ fi
 CURRENT=$(cat "$TARGET")
 
 MERGED=$(printf '%s' "$CURRENT" | jq --argjson d "$DESIRED" '
-  # hooks and enabledPlugins are intentionally not touched — preserved from existing file
+  # enabledPlugins is intentionally not touched — preserved from existing file
+  # hooks: for each event key in desired, union arrays into existing; other events preserved
+  .hooks = (
+    ($d.hooks // {}) as $dh |
+    (.hooks // {}) as $ch |
+    ($dh | keys) as $dkeys |
+    reduce $dkeys[] as $event (
+      $ch;
+      .[$event] = (
+        ((.[$event] // []) + $dh[$event]) | unique
+      )
+    )
+  ) |
   .env = $d.env |
   .language = $d.language |
   .statusLine = $d.statusLine |
