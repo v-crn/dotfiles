@@ -1,9 +1,7 @@
 #!/usr/bin/env bats
 # Tests for Claude Code hook scripts
 
-REPO_ROOT="$(cd "$(dirname "$BATS_TEST_FILENAME")/.." && pwd)"
-CHEZMOI_ROOT="$(tr -d '[:space:]' < "$REPO_ROOT/.chezmoiroot")"
-HOOKS_DIR="$REPO_ROOT/$CHEZMOI_ROOT/dot_claude/hooks"
+HOOKS_DIR="$HOME/.claude/hooks"
 PLATFORM_SH="$HOOKS_DIR/lib/platform.sh"
 
 # ---------------------------------------------------------------------------
