@@ -152,6 +152,9 @@ EOF
     # Desired PreToolUse entries are added; existing Skill entry is preserved
     run jq '.hooks.PreToolUse | length' "$HOME/.claude/settings.json"
     [ "$output" -ge 2 ]
+    # Verify the existing Skill entry is preserved (not lost during union)
+    run jq '.hooks.PreToolUse | map(select(.matcher == "Skill")) | length' "$HOME/.claude/settings.json"
+    [ "$output" = "1" ]
     # UserPromptSubmit (not in DESIRED) is preserved
     run jq '.hooks | has("UserPromptSubmit")' "$HOME/.claude/settings.json"
     [ "$output" = "true" ]
