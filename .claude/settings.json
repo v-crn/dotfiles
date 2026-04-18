@@ -1,21 +1,17 @@
 {
   "permissions": {
     "allow": [
-      "Bash(bats:*)",
-      "Bash(chezmoi apply:*)"
+      "Bash(bats *)",
+      "Bash(command -v *)",
+      "Bash(chezmoi add *)",
+      "Bash(chezmoi edit *)",
+      "Bash(chezmoi diff *)",
+      "Bash(chezmoi apply -n *)",
+      "Bash(chezmoi managed *)",
+      "Bash(chezmoi cd *)",
+      "Bash(chezmoi data *)",
+      "Bash(make lint *)",
+      "Bash(make test *)"
     ]
-  },
-  "sandbox": {
-    "filesystem": {
-      "allowWrite": [
-        "~/.zshenv",
-        "~/.zprofile",
-        "~/.zshrc",
-        "~/.config/chezmoi",
-        "~/.config/sheldon",
-        "~/.config/zsh",
-        "~/.config/starship.toml"
-      ]
-    }
   }
 }
