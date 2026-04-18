@@ -32,7 +32,8 @@ DESIRED=$(cat <<'EOF'
         "autoAllowBashIfSandboxed": true,
         "excludedCommands": [
             "git",
-            "docker"
+            "docker",
+            "bats"
         ],
         "network": {
             "allowedHosts": [
