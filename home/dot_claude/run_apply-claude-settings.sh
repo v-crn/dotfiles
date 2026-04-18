@@ -105,11 +105,7 @@ DESIRED=$(cat <<'EOF'
     "hooks": {
         "PreToolUse": [
             {
-                "matcher": "Bash",
-                "hooks": [{"type": "command", "command": "~/.claude/hooks/pre-tool-use.sh"}]
-            },
-            {
-                "matcher": "Read|Edit|Write",
+                "matcher": "Bash|Read|Edit|Write",
                 "hooks": [{"type": "command", "command": "~/.claude/hooks/pre-tool-use.sh"}]
             }
         ],
