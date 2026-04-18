@@ -44,6 +44,8 @@ dotfiles/
 │   │   ├── AGENTS.md.tmpl           # 環境判定で動的生成
 │   │   └── rules/                   # ルールファイル群
 │   ├── dot_claude/                  # → ~/.claude/  (Claude Code 設定)
+│   │   ├── hooks/                   # Claude Code hooks（セキュリティ・通知）
+│   │   └── run_apply-claude-settings.sh  # settings.json 生成スクリプト
 │   ├── dot_gemini/                  # → ~/.gemini/  (Gemini CLI 設定)
 │   ├── dot_cursor/                  # → ~/.cursor/  (Cursor 設定)
 │   ├── dot_zshenv.tmpl              # → ~/.zshenv
@@ -76,6 +78,7 @@ Read [docs/tools/chezmoi.md](docs/tools/chezmoi.md)
   - [chezmoi](docs/tools/chezmoi.md) — dotfiles 管理
   - [agents](docs/tools/agents.md) — Coding agents 共通ルール管理
   - [ccstatusline](docs/tools/ccstatusline.md) — Claude Code ステータスライン
+  - [claude_code_hooks](docs/tools/claude_code_hooks.md) — Claude Code hooks（セキュリティ・通知）
   - [sheldon](docs/tools/sheldon.md) — Shell プラグインマネージャ
   - [starship](docs/tools/starship.md) — Shell プロンプト
   - [mise](docs/tools/mise.md) — ランタイムバージョン管理
