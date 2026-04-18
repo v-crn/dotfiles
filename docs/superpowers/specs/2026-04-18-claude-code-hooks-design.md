@@ -195,7 +195,7 @@ Hooks are added to the `DESIRED` block in `run_apply-claude-settings.sh`. The ex
 }
 ```
 
-The merge strategy for `hooks` in `run_apply-claude-settings.sh`: **overwrite** (replace the entire `hooks` object from `DESIRED`). This differs from the array-union approach used for `permissions.allow/deny`, because hook order and deduplication are managed at the script level, not via JSON merging.
+The merge strategy for `hooks` in `run_apply-claude-settings.sh`: **union per event** — for each event key present in `DESIRED` (e.g., `PreToolUse`, `Notification`, `Stop`), its hook array is unioned (via `unique`) into the existing array for that event; event keys not present in `DESIRED` are preserved unchanged. This is consistent with the array-union approach used for `permissions.allow/deny`.
 
 ---
 
