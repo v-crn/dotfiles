@@ -1,0 +1,20 @@
+# Global Rules for Coding Agents
+
+{{/* Common rules */ -}}
+{{ template "assets/agents/rules/common/language-policy.md" . }}
+{{ template "assets/agents/rules/common/markdown-linting.md" . }}
+{{ template "assets/agents/rules/common/preferred-tools.md" . }}
+{{ template "assets/agents/rules/common/privacy-policy.md" . }}
+{{ template "assets/agents/rules/common/security.md" . }}
+{{/**/ -}}
+{{/* OS / Environment specific */ -}}
+{{ if eq .chezmoi.os "linux" -}}
+{{   if contains "microsoft" .chezmoi.kernel.osrelease -}}
+{{ template "assets/agents/rules/wsl/coding-style.md" . -}}
+{{   end -}}
+{{ end -}}
+{{/**/ -}}
+{{/* Workspace specific */ -}}
+{{ if and (hasKey . "workspace") (ne .workspace "personal") -}}
+{{ template "assets/agents/rules/workspace/{{ .workspace }}.md" . -}}
+{{ end -}}

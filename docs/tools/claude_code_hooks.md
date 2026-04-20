@@ -2,6 +2,8 @@
 
 Claude Code の hooks 機能を使い、セキュリティと通知の自動化を実装している。
 
+`~/.claude/CLAUDE.md` 自体は `home/dot_claude/CLAUDE.md.tmpl` から生成され、共通ルール本文は `home/.chezmoitemplates/AGENTS.md.tmpl` を参照する。hooks はこの共有ルール構成とは独立して `~/.claude/settings.json` に統合される。
+
 ## 概要
 
 | Hook 種別 | トリガー | 動作 |

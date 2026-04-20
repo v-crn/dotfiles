@@ -7,15 +7,12 @@
 ```text
 ~/.agents/
 ├── AGENTS.md          # エントリーポイント（chezmoi が環境に合わせて生成）
-├── rules/
-│   ├── common/        # 常時適用ルール
-│   ├── wsl/           # WSL 固有ルール
-│   ├── macos/         # macOS 固有ルール
-│   └── workspace/     # ワークスペース別ルール
 └── skills/            # 共有スキル（エージェントが on-demand でロード）
     └── <skill-name>/
         └── SKILL.md
 ```
+
+ルール本文の共通ソースは `home/.chezmoitemplates/AGENTS.md.tmpl` に集約されている。`home/dot_agents/AGENTS.md.tmpl`、`home/dot_claude/CLAUDE.md.tmpl`、`home/dot_gemini/GEMINI.md.tmpl`、`home/dot_codex/AGENTS.md.tmpl` はこの named template を呼ぶ薄いエントリーポイントで、`home/dot_cursor/rules/global.mdc.tmpl` は frontmatter を付けたうえで同じ本文をインライン展開する。
 
 ## 各ツールの参照方式
 
@@ -40,12 +37,12 @@
 
 ## 環境判定ロジック
 
-`~/.agents/AGENTS.md` は chezmoi テンプレート（`home/dot_agents/AGENTS.md.tmpl`）から生成される。
+`~/.agents/AGENTS.md` は `home/dot_agents/AGENTS.md.tmpl` から生成されるが、実体のルール本文は `home/.chezmoitemplates/AGENTS.md.tmpl` にある。
 
 | 条件 | 判定方法 | 追加されるルール |
 | --- | --- | --- |
-| WSL 環境 | `chezmoi.kernel.osrelease` に `"microsoft"` を含む | `rules/wsl/coding-style.md` |
-| 非 personal ワークスペース | `workspace != "personal"`（`chezmoi.toml` で設定） | `rules/workspace/<name>.md` |
+| WSL 環境 | `chezmoi.kernel.osrelease` に `"microsoft"` を含む | `assets/agents/rules/wsl/coding-style.md` |
+| 非 personal ワークスペース | `workspace != "personal"`（`chezmoi.toml` で設定） | `assets/agents/rules/workspace/<name>.md` |
 
 ## ワークスペース設定
 
@@ -56,14 +53,14 @@
 workspace = "work-acme"
 ```
 
-対応するルールファイル `home/dot_agents/rules/workspace/work-acme.md` を作成し、`make apply` を実行する。
+対応するルールファイル `home/.chezmoitemplates/assets/agents/rules/workspace/work-acme.md` を作成し、`make apply` を実行する。
 
 ## ルール追加手順
 
-1. `home/dot_agents/rules/<category>/<name>.md` を作成
-2. 必要に応じて `home/dot_agents/AGENTS.md.tmpl` に判定条件と参照行を追加
-3. Cursor も更新が必要な場合は `home/dot_cursor/rules/global.mdc.tmpl` も編集
-4. `chezmoi execute-template < home/dot_agents/AGENTS.md.tmpl` でレンダリングを確認
+1. `home/.chezmoitemplates/assets/agents/rules/<category>/<name>.md` を作成
+2. 必要に応じて `home/.chezmoitemplates/AGENTS.md.tmpl` に判定条件と参照行を追加
+3. `chezmoi execute-template --source . < home/dot_agents/AGENTS.md.tmpl` でレンダリングを確認
+4. `chezmoi execute-template --source . < home/dot_cursor/rules/global.mdc.tmpl` で Cursor 向け展開も確認
 5. `make apply` で反映（dotfiles リポジトリルートから実行）
 
 ## スキル追加手順
@@ -84,6 +81,9 @@ ls ~/.gemini/skills/
 ```zsh
 # AGENTS.md のレンダリング確認（dotfiles リポジトリルートから実行）
 chezmoi execute-template --source . < home/dot_agents/AGENTS.md.tmpl
+
+# Cursor ルールのレンダリング確認
+chezmoi execute-template --source . < home/dot_cursor/rules/global.mdc.tmpl
 
 # 現在の環境変数（chezmoi テンプレート変数）を確認
 chezmoi data

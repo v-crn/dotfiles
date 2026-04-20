@@ -40,15 +40,22 @@ sheldon lock
 dotfiles/
 ├── home/                            # chezmoi ソースルート (.chezmoiroot)
 │   ├── .chezmoiscripts/             # chezmoi スクリプト (~/には展開されない)
+│   ├── .chezmoitemplates/           # 共有 chezmoi named templates
+│   │   └── AGENTS.md.tmpl           # coding agents 共通ルール本体
 │   ├── dot_agents/                  # → ~/.agents/  (coding agents 共通ルール・スキル)
-│   │   ├── AGENTS.md.tmpl           # 環境判定で動的生成
-│   │   ├── rules/                   # ルールファイル群
+│   │   ├── AGENTS.md.tmpl           # 共有テンプレートのエントリーポイント
 │   │   └── skills/                  # 共有スキル（chezmoi apply でリンクを自動作成）
 │   ├── dot_claude/                  # → ~/.claude/  (Claude Code 設定)
+│   │   ├── CLAUDE.md.tmpl           # 共有テンプレートのエントリーポイント
 │   │   ├── hooks/                   # Claude Code hooks（セキュリティ・通知）
 │   │   └── run_apply-claude-settings.sh  # settings.json 生成スクリプト
 │   ├── dot_gemini/                  # → ~/.gemini/  (Gemini CLI 設定)
+│   │   └── GEMINI.md.tmpl           # 共有テンプレートのエントリーポイント
+│   ├── dot_codex/                   # → ~/.codex/   (Codex CLI 設定)
+│   │   ├── AGENTS.md.tmpl           # 共有テンプレートのエントリーポイント
+│   │   └── run_apply-codex-config.sh  # config.toml 生成スクリプト
 │   ├── dot_cursor/                  # → ~/.cursor/  (Cursor 設定)
+│   │   └── rules/global.mdc.tmpl    # frontmatter + 共有テンプレート本文
 │   ├── dot_zshenv.tmpl              # → ~/.zshenv
 │   ├── dot_zprofile.tmpl            # → ~/.zprofile
 │   ├── dot_zshrc.tmpl               # → ~/.zshrc
