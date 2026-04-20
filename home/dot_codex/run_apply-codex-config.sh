@@ -72,7 +72,7 @@ MANAGED_SECTS='tui|features|memories|profiles'
 
 TMP=$(mktemp "${TARGET}.tmp.XXXXXX")
 TMP2=$(mktemp "${TARGET}.tmp2.XXXXXX")
-awk \
+if ! awk \
     -v keys="^(${MANAGED_KEYS})[[:space:]]*=" \
     -v sects="^\\[(${MANAGED_SECTS})(\\.|\\])" \
     '
@@ -81,18 +81,15 @@ awk \
     skip                     { next }
     $0 ~ keys                { next }
     { print }
-    ' "$TARGET" > "$TMP2"
-
-# Guard: abort if awk produced empty output for a non-empty input
-if [ ! -s "$TMP2" ] && [ -s "$TARGET" ]; then
-    printf 'Error: awk produced empty output. Aborting merge.\n' >&2
+    ' "$TARGET" > "$TMP2"; then
+    printf 'Error: awk failed. Aborting merge.\n' >&2
     rm -f "$TMP" "$TMP2"
     exit 1
 fi
 
 # Strip trailing blank lines from preserved content, then add exactly one blank
 # line separator before the desired block to ensure idempotency.
-awk 'NF { buf = buf $0 "\n"; blank="" } !NF { blank = blank "\n" }
+awk 'NF { buf = buf $0 "\n" }
      END { if (buf != "") printf "%s", buf }' "$TMP2" > "$TMP"
 rm -f "$TMP2"
 printf '\n' >> "$TMP"
