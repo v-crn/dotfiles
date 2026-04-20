@@ -1,4 +1,4 @@
-# Markdown Linting
+## Markdown Linting
 
 Config: `.markdownlint-cli2.jsonc`
 
