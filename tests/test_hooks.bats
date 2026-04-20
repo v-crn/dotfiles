@@ -2,7 +2,7 @@
 # Tests for Claude Code hook scripts
 
 HOOKS_DIR="$HOME/.claude/hooks"
-PLATFORM_SH="$HOOKS_DIR/lib/platform.sh"
+PLATFORM_SH="$HOME/.agents/hooks/lib/platform.sh"
 
 # ---------------------------------------------------------------------------
 # lib/platform.sh
@@ -33,7 +33,7 @@ PLATFORM_SH="$HOOKS_DIR/lib/platform.sh"
     [ "$output" = "unknown" ]
 }
 
-NOTIFY_SH="$HOOKS_DIR/lib/notify.sh"
+NOTIFY_SH="$HOME/.agents/hooks/lib/notify.sh"
 
 # ---------------------------------------------------------------------------
 # lib/notify.sh
