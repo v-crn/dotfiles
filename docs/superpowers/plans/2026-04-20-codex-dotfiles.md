@@ -16,10 +16,10 @@ chezmoi's default source is `~/.local/share/chezmoi`. This repo is a separate so
 that must be specified explicitly. All `chezmoi` commands in this plan use the helper:
 
 ```bash
-alias cm='chezmoi --source "$(git -C /workspace/dotfiles rev-parse --show-toplevel)/home"'
+alias cm='chezmoi --source "$(git -C /workspace/dotfiles rev-parse --show-toplevel)"'
 ```
 
-Set this alias before starting, or substitute `chezmoi --source /workspace/dotfiles/home`
+Set this alias before starting, or substitute `chezmoi --source /workspace/dotfiles`
 for every `chezmoi` call.
 
 ---
