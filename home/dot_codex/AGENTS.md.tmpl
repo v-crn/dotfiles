@@ -1,0 +1,17 @@
+# AGENTS.md
+
+{{ include "dot_agents/rules/common/language-policy.md" }}
+
+{{ include "dot_agents/rules/common/markdown-linting.md" }}
+
+{{ include "dot_agents/rules/common/preferred-tools.md" }}
+
+{{ include "dot_agents/rules/common/privacy-policy.md" }}
+
+{{ include "dot_agents/rules/common/security.md" }}
+{{- if eq .chezmoi.os "linux" }}
+{{-   if contains "microsoft" .chezmoi.kernel.osrelease }}
+
+{{ include "dot_agents/rules/wsl/coding-style.md" }}
+{{-   end }}
+{{- end }}
