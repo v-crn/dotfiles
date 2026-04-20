@@ -1,5 +1,5 @@
 #!/bin/bash
-# Notification library for Claude Code hooks.
+# Shared notification library for agent hooks.
 # Usage: source this file, then call send_notification TITLE MESSAGE.
 
 NOTIFY_LIB_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"

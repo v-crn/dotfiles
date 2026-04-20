@@ -2,10 +2,8 @@
 # Stop event hook for Claude Code.
 # Sends a completion notification after responses that took >= 10 seconds.
 # Skips fast responses to avoid noise during short back-and-forth exchanges.
-
-HOOK_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-# shellcheck disable=SC1091
-. "$HOOK_DIR/lib/notify.sh"
+# shellcheck disable=SC1090,SC1091
+. ~/.agents/hooks/lib/notify.sh
 
 INPUT="$(cat)"
 
