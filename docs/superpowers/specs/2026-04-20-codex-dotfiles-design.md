@@ -36,13 +36,24 @@ during implementation and switch if viable.
 
 ### Managed Sections (overwritten on every apply)
 
-| Section | Reason |
+| Section | Key settings |
 | --- | --- |
-| `[tui]` | UI layout preference |
-| `[model]` | Model selection |
-| `[approval_policy]` | Tool approval defaults |
-| `[sandbox_mode]` | Sandbox level |
-| `[notice]` | "Don't show again" UI flags — personal preference, keep consistent |
+| `[tui]` | `status_line`, `notifications`, `notification_condition`, `show_tooltips`, `animations`, `theme` |
+| `model` | model name string |
+| `model_reasoning_effort` | `"medium"` etc. |
+| `approval_policy` | `"on-failure"` etc. |
+| `sandbox_mode` | `"workspace-write"` etc. |
+| `personality` | `"pragmatic"` etc. |
+| `notify` | external notification command array |
+
+**Notifications:** codex has two notification mechanisms:
+
+- `[tui] notifications` + `notification_condition` — built-in desktop notifications
+  via terminal (OSC 9 / BEL). Set `notification_condition = "always"` to notify
+  even when the terminal is focused.
+- `notify = [...]` — external command spawned after each agent turn. Reuse
+  `~/.claude/hooks/lib/notify.sh` logic for platform-appropriate notifications
+  (macOS: `osascript`, WSL/Linux: `notify-send`).
 
 ### Preserved Sections (never touched)
 
@@ -52,6 +63,7 @@ Everything not listed above is preserved automatically, including:
 | --- | --- |
 | `[projects.*]` | Per-environment trust level — must be set locally |
 | `[auth.*]` | Authentication credentials |
+| `[notice.*]` | Per-installation state flags (dismissed warnings) — not preferences |
 | Any future codex sections | Unknown sections are preserved by default |
 
 ### Script Logic
@@ -60,10 +72,10 @@ Everything not listed above is preserved automatically, including:
 # 1. Backup
 cp ~/.codex/config.toml ~/.codex/config.toml.bak
 
-# 2. Remove managed sections from existing file
+# 2. Remove managed sections from existing file (awk handles multi-line sections)
 awk '
-  /^\[(tui|model|approval_policy|sandbox_mode|notice)\]/ { skip=1 }
-  /^\[/ && !/^\[(tui|model|approval_policy|sandbox_mode|notice)\]/ { skip=0 }
+  /^\[?(tui|model|approval_policy|sandbox_mode|personality|notify)\]?/ { skip=1 }
+  /^\[/ && !/^\[?(tui|model|approval_policy|sandbox_mode|personality|notify)\]?/ { skip=0 }
   !skip { print }
 ' ~/.codex/config.toml > /tmp/codex-config-base.toml
 
