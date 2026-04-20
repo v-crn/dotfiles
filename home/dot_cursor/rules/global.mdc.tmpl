@@ -3,22 +3,4 @@ description: Global coding rules for all projects
 alwaysApply: true
 ---
 
-{{ include "dot_agents/rules/common/language-policy.md" }}
-
-{{ include "dot_agents/rules/common/markdown-linting.md" }}
-
-{{ include "dot_agents/rules/common/preferred-tools.md" }}
-
-{{ include "dot_agents/rules/common/privacy-policy.md" }}
-
-{{ include "dot_agents/rules/common/security.md" }}
-
-{{ if eq .chezmoi.os "linux" -}}
-{{   if contains "microsoft" .chezmoi.kernel.osrelease -}}
-{{ include "dot_agents/rules/wsl/coding-style.md" }}
-{{   end -}}
-{{ end -}}
-
-{{ if and (hasKey . "workspace") (ne .workspace "personal") -}}
-{{ include (printf "dot_agents/rules/workspace/%s.md" .workspace) }}
-{{ end -}}
+{{ template "AGENTS.md.tmpl" . -}}

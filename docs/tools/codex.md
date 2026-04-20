@@ -16,8 +16,10 @@ OpenAI が提供するターミナル向け AI コーディングエージェン
 ## chezmoi 管理対象ファイル
 
 ```text
+home/.chezmoitemplates/
+  AGENTS.md.tmpl                ← shared rules body for coding agents
 home/dot_codex/
-  AGENTS.md.tmpl                ← ~/.codex/AGENTS.md（Go テンプレートで生成）
+  AGENTS.md.tmpl                ← ~/.codex/AGENTS.md（shared template のエントリーポイント）
   hooks/
     executable_notify.sh        ← ~/.codex/hooks/notify.sh
   run_apply-codex-config.sh     ← chezmoi apply 時に実行（ファイルとしては非デプロイ）
@@ -81,23 +83,19 @@ model-with-reasoning  current-dir  git-branch  context-used  context-window-size
 
 ### 生成方法（chezmoi テンプレート）
 
-Codex CLI は Claude Code の `@path` 構文に対応していないため、`chezmoi apply` 時に Go テンプレートでファイルを静的展開する。
+Codex CLI は Claude Code の `@path` 構文に対応していないため、`chezmoi apply` 時に Go テンプレートでファイルを静的展開する。現在は `home/.chezmoitemplates/AGENTS.md.tmpl` に共通本文を集約し、`home/dot_codex/AGENTS.md.tmpl` はその named template を呼び出すだけの薄いエントリーポイントになっている。
 
 ソース: `home/dot_codex/AGENTS.md.tmpl`
 
 ```text
-# AGENTS.md
-
-{{ include "dot_agents/rules/common/language-policy.md" }}
-{{ include "dot_agents/rules/common/markdown-linting.md" }}
-...（WSL 環境では wsl/coding-style.md も展開）
+{{ template "AGENTS.md.tmpl" . -}}
 ```
 
-`chezmoi execute-template` が `dot_agents/rules/` 以下の各 Markdown ファイルの内容をインライン展開し、`~/.codex/AGENTS.md` として書き出す。
+共通本文側では `home/.chezmoitemplates/assets/agents/rules/` 以下の Markdown ファイルをインライン展開し、`~/.codex/AGENTS.md` として書き出す。
 
 ### `@path` が使えない理由
 
-Codex CLI はファイル内の `@path` ディレクティブを解釈しない。そのため `~/.claude/CLAUDE.md` のように別ファイルへ委譲することができず、chezmoi テンプレートによる静的展開を採用している。
+Codex CLI はファイル内の `@path` ディレクティブを解釈しない。そのため `~/.claude/CLAUDE.md` のような実行時委譲はできない。一方でソース管理上は共通化したいため、chezmoi の named template で共有しつつ、生成結果は静的展開にしている。
 
 ### プロジェクト別上書き
 
@@ -200,6 +198,9 @@ chezmoi apply --source .
 ```zsh
 # AGENTS.md の展開結果を確認
 chezmoi execute-template --source . < home/dot_codex/AGENTS.md.tmpl
+
+# 共通テンプレート本体を確認
+chezmoi execute-template --source . < home/dot_agents/AGENTS.md.tmpl
 ```
 
 ### 適用後の確認
