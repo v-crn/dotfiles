@@ -33,11 +33,9 @@ DESIRED=$(cat <<'EOF'
         "excludedCommands": [
             "git",
             "docker",
-            "jq",
-            "yq",
-            "shellcheck",
-            "bats",
-            "markdownlint-cli2"
+            "ctx7",
+            "tvly",
+            "yt-dlp"
         ],
         "network": {
             "allowedHosts": [
