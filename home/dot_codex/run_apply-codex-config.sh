@@ -26,7 +26,13 @@ personality = "Be concise and precise. Prefer minimal, focused changes. Follow e
 notify = ["~/.codex/hooks/notify.sh"]
 
 [tui]
-status_line = ["model-with-reasoning", "current-dir", "git-branch", "context-used", "context-window-size"]
+status_line = [
+    "model-with-reasoning",
+    "current-dir",
+    "git-branch",
+    "context-used",
+    "context-window-size",
+]
 notifications = true
 notification_condition = "always"
 
