@@ -22,6 +22,7 @@ chezmoi.toml
 /.idea
 /.vscode
 /.mcp.json
+/.codex
 
 # Dotfiles that belong in home/ (not repo root)
 # These may appear as sandbox device files in some environments
