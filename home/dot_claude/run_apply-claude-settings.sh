@@ -51,7 +51,9 @@ DESIRED=$(cat <<'EOF'
                 "context7.com",
                 "generativelanguage.googleapis.com",
                 "api.tavily.com",
-                "auth.tavily.com"
+                "auth.tavily.com",
+                "mise.jdx.dev",
+                "registry.npmjs.org"
             ]
         }
     },
