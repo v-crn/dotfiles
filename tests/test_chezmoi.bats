@@ -43,3 +43,15 @@ setup() {
     [[ "$cursor_output" == *"alwaysApply: true"* ]]
     [ "$cursor_body" = "$agents_output" ]
 }
+
+@test "chezmoi source includes shared and agent hook directories" {
+    run fd . "$REPO_ROOT/$CHEZMOI_ROOT/dot_agents/hooks" -tf
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"executable_check-preflight.sh"* ]]
+    [[ "$output" == *"executable_notify-finished.sh"* ]]
+
+    run fd . "$REPO_ROOT/$CHEZMOI_ROOT/dot_gemini/hooks" -tf
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"executable_pre-tool-use.sh"* ]]
+    [[ "$output" == *"executable_stop.sh"* ]]
+}

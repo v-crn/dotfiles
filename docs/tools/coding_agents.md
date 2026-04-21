@@ -14,6 +14,18 @@
 
 ルール本文の共通ソースは `home/.chezmoitemplates/AGENTS.md.tmpl` に集約されている。`home/dot_agents/AGENTS.md.tmpl`、`home/dot_claude/CLAUDE.md.tmpl`、`home/dot_gemini/GEMINI.md.tmpl`、`home/dot_codex/AGENTS.md.tmpl` はこの named template を呼ぶ薄いエントリーポイントで、`home/dot_cursor/rules/global.mdc.tmpl` は frontmatter を付けたうえで同じ本文をインライン展開する。
 
+## Shared Hooks
+
+`~/.agents/hooks/` を coding agent 向け hook の共通基盤として使う。
+
+| 区分 | パス | 用途 |
+| --- | --- | --- |
+| Shared core | `~/.agents/hooks/lib/` | `.env` 判定、危険 Bash 判定、通知 transport |
+| Shared entrypoints | `~/.agents/hooks/bin/` | `check-preflight.sh` `notify-attention.sh` `notify-finished.sh` |
+| Agent adapters | `~/.claude/hooks/` `~/.codex/hooks/` `~/.gemini/hooks/` | 各ツール固有の stdin/stdout 変換 |
+
+共有コアには判定ロジックと通知実装を集約し、各エージェント配下の hook は薄い adapter として入力形式の違いだけを吸収する。これにより、ポリシー変更や通知経路の変更は `~/.agents/hooks/` 側で一元管理できる。
+
 ## 各ツールの参照方式
 
 ### ルール
