@@ -144,6 +144,29 @@ EOFMOCK
     rm -rf "$EMPTY_DIR"
 }
 
+@test "notify.sh: falls back to stderr when notify-send fails" {
+    setup_shared_hooks_home
+    MOCK_DIR="$(mktemp -d)"
+    cat > "$MOCK_DIR/notify-send" <<'EOFMOCK'
+#!/bin/bash
+echo "dbus unavailable" >&2
+exit 1
+EOFMOCK
+    chmod +x "$MOCK_DIR/notify-send"
+
+    run env HOME="$SHARED_HOOKS_HOME" bash -c "
+        export PATH='$MOCK_DIR:\$PATH'
+        export WSL_DISTRO_NAME=Ubuntu
+        . '$SHARED_HOOKS_HOME/.agents/hooks/lib/notify.sh'
+        output=\$(send_notification 'FallbackTitle' 'FallbackMsg' 2>&1)
+        printf '%s\n' \"\$output\"
+    "
+    [ "$status" -eq 0 ]
+    echo "$output" | grep -q "\[NOTICE\] FallbackTitle: FallbackMsg"
+    rm -rf "$MOCK_DIR"
+    teardown_shared_hooks_home
+}
+
 @test "notify.sh: falls back to stderr on unknown platform" {
     EMPTY_DIR="$(mktemp -d)"
     run bash -c "
