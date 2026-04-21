@@ -15,6 +15,31 @@ teardown() {
     rm -rf "$TEST_HOME"
 }
 
+install_shared_hooks_home() {
+    local target_home="$1"
+
+    mkdir -p "$target_home/.agents/hooks/lib" "$target_home/.agents/hooks/bin"
+    cp "$REPO_ROOT/home/dot_agents/hooks/lib/executable_notify.sh" "$target_home/.agents/hooks/lib/notify.sh"
+    cp "$REPO_ROOT/home/dot_agents/hooks/lib/executable_platform.sh" "$target_home/.agents/hooks/lib/platform.sh"
+    cp "$REPO_ROOT/home/dot_agents/hooks/lib/executable_env_policy.sh" "$target_home/.agents/hooks/lib/env_policy.sh"
+    cp "$REPO_ROOT/home/dot_agents/hooks/lib/executable_bash_policy.sh" "$target_home/.agents/hooks/lib/bash_policy.sh"
+    cp "$REPO_ROOT/home/dot_agents/hooks/bin/executable_check-preflight.sh" "$target_home/.agents/hooks/bin/check-preflight.sh"
+    cp "$REPO_ROOT/home/dot_agents/hooks/bin/executable_agent-signal.sh" "$target_home/.agents/hooks/bin/agent-signal.sh"
+    cp "$REPO_ROOT/home/dot_agents/hooks/bin/executable_agent-attention.sh" "$target_home/.agents/hooks/bin/agent-attention.sh"
+    cp "$REPO_ROOT/home/dot_agents/hooks/bin/executable_agent-finished.sh" "$target_home/.agents/hooks/bin/agent-finished.sh"
+    cp "$REPO_ROOT/home/dot_agents/hooks/bin/executable_agent-danger.sh" "$target_home/.agents/hooks/bin/agent-danger.sh"
+    chmod +x \
+        "$target_home/.agents/hooks/lib/notify.sh" \
+        "$target_home/.agents/hooks/lib/platform.sh" \
+        "$target_home/.agents/hooks/lib/env_policy.sh" \
+        "$target_home/.agents/hooks/lib/bash_policy.sh" \
+        "$target_home/.agents/hooks/bin/check-preflight.sh" \
+        "$target_home/.agents/hooks/bin/agent-signal.sh" \
+        "$target_home/.agents/hooks/bin/agent-attention.sh" \
+        "$target_home/.agents/hooks/bin/agent-finished.sh" \
+        "$target_home/.agents/hooks/bin/agent-danger.sh"
+}
+
 # ---------------------------------------------------------------------------
 # Script existence
 # ---------------------------------------------------------------------------
@@ -174,4 +199,114 @@ EOF
     "$SCRIPT"
     SECOND=$(normalize "$HOME/.claude/settings.json")
     [ "$FIRST" = "$SECOND" ]
+}
+
+@test "notification adapter delegates to agent-attention" {
+    install_shared_hooks_home "$HOME"
+    mkdir -p "$HOME/.claude/hooks"
+    cp "$REPO_ROOT/home/dot_claude/hooks/executable_notification.sh" "$HOME/.claude/hooks/notification.sh"
+    chmod +x "$HOME/.claude/hooks/notification.sh"
+    CALLS="$(mktemp)"
+    cat > "$HOME/.agents/hooks/bin/agent-attention.sh" <<EOF
+#!/bin/bash
+printf '%s\n' "\$@" >> "$CALLS"
+EOF
+    chmod +x "$HOME/.agents/hooks/bin/agent-attention.sh"
+
+    run env HOME="$HOME" "$HOME/.claude/hooks/notification.sh" <<<'{}'
+    [ "$status" -eq 0 ]
+    [ "$(cat "$CALLS")" = $'Claude Code\nNeeds your attention' ]
+    rm -f "$CALLS"
+}
+
+@test "stop adapter delegates to agent-finished after elapsed time" {
+    install_shared_hooks_home "$HOME"
+    mkdir -p "$HOME/.claude/hooks"
+    cp "$REPO_ROOT/home/dot_claude/hooks/executable_stop.sh" "$HOME/.claude/hooks/stop.sh"
+    chmod +x "$HOME/.claude/hooks/stop.sh"
+    CALLS="$(mktemp)"
+    cat > "$HOME/.agents/hooks/bin/agent-finished.sh" <<EOF
+#!/bin/bash
+printf '%s\n' "\$@" >> "$CALLS"
+EOF
+    chmod +x "$HOME/.agents/hooks/bin/agent-finished.sh"
+
+    SESSION="claude-stop-$$"
+    MARKER_DIR="$(mktemp -d)"
+    PAST=$(( $(date +%s) - 15 ))
+    printf '%s\n' "$PAST" > "$MARKER_DIR/claude-last-stop-$SESSION"
+
+    run env HOME="$HOME" TMPDIR="$MARKER_DIR" "$HOME/.claude/hooks/stop.sh" <<EOF
+{"stop_hook_active":false,"session_id":"$SESSION"}
+EOF
+    [ "$status" -eq 0 ]
+    [ "$(cat "$CALLS")" = $'Claude Code\nFinished' ]
+    rm -f "$CALLS"
+    rm -rf "$MARKER_DIR"
+}
+
+@test "pre-tool-use adapter emits agent-danger on denied Bash command" {
+    install_shared_hooks_home "$HOME"
+    mkdir -p "$HOME/.claude/hooks"
+    cp "$REPO_ROOT/home/dot_claude/hooks/executable_pre-tool-use.sh" "$HOME/.claude/hooks/pre-tool-use.sh"
+    chmod +x "$HOME/.claude/hooks/pre-tool-use.sh"
+    CALLS="$(mktemp)"
+    cat > "$HOME/.agents/hooks/bin/agent-danger.sh" <<EOF
+#!/bin/bash
+printf '%s\n' "\$@" >> "$CALLS"
+EOF
+    chmod +x "$HOME/.agents/hooks/bin/agent-danger.sh"
+
+    run env HOME="$HOME" "$HOME/.claude/hooks/pre-tool-use.sh" <<'EOF'
+{"tool_name":"Bash","tool_input":{"command":"rm -rf /"}}
+EOF
+
+    [ "$status" -eq 2 ]
+    [ "$(cat "$CALLS")" = $'Claude Code\nDangerous command blocked' ]
+    rm -f "$CALLS"
+}
+
+@test "pre-tool-use adapter does not emit agent-danger on shared library failure" {
+    install_shared_hooks_home "$HOME"
+    mkdir -p "$HOME/.claude/hooks"
+    cp "$REPO_ROOT/home/dot_claude/hooks/executable_pre-tool-use.sh" "$HOME/.claude/hooks/pre-tool-use.sh"
+    chmod +x "$HOME/.claude/hooks/pre-tool-use.sh"
+    CALLS="$(mktemp)"
+    cat > "$HOME/.agents/hooks/bin/agent-danger.sh" <<EOF
+#!/bin/bash
+printf '%s\n' "\$@" >> "$CALLS"
+EOF
+    chmod +x "$HOME/.agents/hooks/bin/agent-danger.sh"
+    rm -f "$HOME/.agents/hooks/lib/env_policy.sh" "$HOME/.agents/hooks/lib/executable_env_policy.sh"
+
+    run env HOME="$HOME" "$HOME/.claude/hooks/pre-tool-use.sh" <<'EOF'
+{"tool_name":"Bash","tool_input":{"command":"rm -rf /"}}
+EOF
+
+    [ "$status" -eq 2 ]
+    printf '%s' "$output" | grep -q 'Blocked: missing shared hook library: env_policy'
+    [ ! -s "$CALLS" ]
+    rm -f "$CALLS"
+}
+
+@test "pre-tool-use adapter preserves sudo warning in stderr" {
+    install_shared_hooks_home "$HOME"
+    mkdir -p "$HOME/.claude/hooks"
+    cp "$REPO_ROOT/home/dot_claude/hooks/executable_pre-tool-use.sh" "$HOME/.claude/hooks/pre-tool-use.sh"
+    chmod +x "$HOME/.claude/hooks/pre-tool-use.sh"
+    CALLS="$(mktemp)"
+    cat > "$HOME/.agents/hooks/bin/agent-danger.sh" <<EOF
+#!/bin/bash
+printf '%s\n' "\$@" >> "$CALLS"
+EOF
+    chmod +x "$HOME/.agents/hooks/bin/agent-danger.sh"
+
+    run env HOME="$HOME" "$HOME/.claude/hooks/pre-tool-use.sh" <<'EOF'
+{"tool_name":"Bash","tool_input":{"command":"sudo apt-get update"}}
+EOF
+
+    [ "$status" -eq 0 ]
+    printf '%s' "$output" | grep -q 'Warning: sudo usage detected.'
+    [ ! -s "$CALLS" ]
+    rm -f "$CALLS"
 }

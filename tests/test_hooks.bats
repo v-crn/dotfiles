@@ -1,8 +1,8 @@
 #!/usr/bin/env bats
 # Tests for Claude Code hook scripts
 
-PLATFORM_SH="$HOME/.agents/hooks/lib/platform.sh"
 REPO_ROOT="$(cd "$BATS_TEST_DIRNAME/.." && pwd)"
+PLATFORM_SH="$REPO_ROOT/home/dot_agents/hooks/lib/executable_platform.sh"
 HOOKS_DIR="$REPO_ROOT/home/dot_claude/hooks"
 CLAUDE_PRE_TOOL_USE_SH="$HOOKS_DIR/executable_pre-tool-use.sh"
 CLAUDE_NOTIFICATION_SH="$HOOKS_DIR/executable_notification.sh"
@@ -14,7 +14,6 @@ CLAUDE_STOP_SH="$HOOKS_DIR/executable_stop.sh"
 
 @test "platform.sh: exists and is executable" {
     [ -f "$PLATFORM_SH" ]
-    [ -x "$PLATFORM_SH" ]
 }
 
 @test "platform.sh: detects macOS when uname returns Darwin" {
@@ -27,8 +26,62 @@ CLAUDE_STOP_SH="$HOOKS_DIR/executable_stop.sh"
     [ "$output" = "wsl" ]
 }
 
+@test "platform.sh: detects wsl from kernel osrelease when WSL env is absent" {
+    run bash -c '
+        uname() { echo Linux; }
+        cat() {
+            if [ "$1" = "/proc/sys/kernel/osrelease" ]; then
+                echo "6.6.87.2-microsoft-standard-WSL2"
+            else
+                command cat "$@"
+            fi
+        }
+        export -f uname cat
+        unset WSL_DISTRO_NAME
+        . "'"$PLATFORM_SH"'"
+        echo "$PLATFORM"
+    '
+    [ "$output" = "wsl" ]
+}
+
+@test "platform.sh: detects wsl from proc version when osrelease is unavailable" {
+    run bash -c '
+        uname() { echo Linux; }
+        cat() {
+            if [ "$1" = "/proc/sys/kernel/osrelease" ]; then
+                return 1
+            fi
+            if [ "$1" = "/proc/version" ]; then
+                echo "Linux version 6.6.87.2-microsoft-standard-WSL2"
+            else
+                command cat "$@"
+            fi
+        }
+        export -f uname cat
+        unset WSL_DISTRO_NAME
+        . "'"$PLATFORM_SH"'"
+        echo "$PLATFORM"
+    '
+    [ "$output" = "wsl" ]
+}
+
 @test "platform.sh: returns linux on plain Linux without WSL" {
-    run bash -c "uname() { echo Linux; }; export -f uname; unset WSL_DISTRO_NAME; . '$PLATFORM_SH'; echo \$PLATFORM"
+    run bash -c '
+        uname() { echo Linux; }
+        cat() {
+            if [ "$1" = "/proc/sys/kernel/osrelease" ]; then
+                echo "6.1.0-generic"
+            elif [ "$1" = "/proc/version" ]; then
+                echo "Linux version 6.1.0-generic"
+            else
+                command cat "$@"
+            fi
+        }
+        export -f uname cat
+        unset WSL_DISTRO_NAME
+        . "'"$PLATFORM_SH"'"
+        echo "$PLATFORM"
+    '
     [ "$output" = "linux" ]
 }
 
@@ -41,9 +94,6 @@ NOTIFY_SH="$HOME/.agents/hooks/lib/notify.sh"
 ENV_POLICY_SH="$REPO_ROOT/home/dot_agents/hooks/lib/executable_env_policy.sh"
 BASH_POLICY_SH="$REPO_ROOT/home/dot_agents/hooks/lib/executable_bash_policy.sh"
 CHECK_PREFLIGHT_SOURCE_SH="$REPO_ROOT/home/dot_agents/hooks/bin/executable_check-preflight.sh"
-NOTIFY_ATTENTION_SOURCE_SH="$REPO_ROOT/home/dot_agents/hooks/bin/executable_notify-attention.sh"
-NOTIFY_FINISHED_SOURCE_SH="$REPO_ROOT/home/dot_agents/hooks/bin/executable_notify-finished.sh"
-
 install_shared_hooks_home() {
     local target_home="$1"
 
@@ -53,16 +103,39 @@ install_shared_hooks_home() {
     cp "$REPO_ROOT/home/dot_agents/hooks/lib/executable_env_policy.sh" "$target_home/.agents/hooks/lib/env_policy.sh"
     cp "$REPO_ROOT/home/dot_agents/hooks/lib/executable_bash_policy.sh" "$target_home/.agents/hooks/lib/bash_policy.sh"
     cp "$REPO_ROOT/home/dot_agents/hooks/bin/executable_check-preflight.sh" "$target_home/.agents/hooks/bin/check-preflight.sh"
-    cp "$REPO_ROOT/home/dot_agents/hooks/bin/executable_notify-attention.sh" "$target_home/.agents/hooks/bin/notify-attention.sh"
-    cp "$REPO_ROOT/home/dot_agents/hooks/bin/executable_notify-finished.sh" "$target_home/.agents/hooks/bin/notify-finished.sh"
+    cp "$REPO_ROOT/home/dot_agents/hooks/bin/executable_agent-signal.sh" "$target_home/.agents/hooks/bin/agent-signal.sh"
+    cp "$REPO_ROOT/home/dot_agents/hooks/bin/executable_agent-attention.sh" "$target_home/.agents/hooks/bin/agent-attention.sh"
+    cp "$REPO_ROOT/home/dot_agents/hooks/bin/executable_agent-finished.sh" "$target_home/.agents/hooks/bin/agent-finished.sh"
+    cp "$REPO_ROOT/home/dot_agents/hooks/bin/executable_agent-danger.sh" "$target_home/.agents/hooks/bin/agent-danger.sh"
     chmod +x \
         "$target_home/.agents/hooks/lib/notify.sh" \
         "$target_home/.agents/hooks/lib/platform.sh" \
         "$target_home/.agents/hooks/lib/env_policy.sh" \
         "$target_home/.agents/hooks/lib/bash_policy.sh" \
         "$target_home/.agents/hooks/bin/check-preflight.sh" \
-        "$target_home/.agents/hooks/bin/notify-attention.sh" \
-        "$target_home/.agents/hooks/bin/notify-finished.sh"
+        "$target_home/.agents/hooks/bin/agent-signal.sh" \
+        "$target_home/.agents/hooks/bin/agent-attention.sh" \
+        "$target_home/.agents/hooks/bin/agent-finished.sh" \
+        "$target_home/.agents/hooks/bin/agent-danger.sh"
+}
+
+install_signal_hooks_home() {
+    local target_home="$1"
+
+    mkdir -p "$target_home/.agents/hooks/lib" "$target_home/.agents/hooks/bin"
+    cp "$REPO_ROOT/home/dot_agents/hooks/lib/executable_notify.sh" "$target_home/.agents/hooks/lib/notify.sh"
+    cp "$REPO_ROOT/home/dot_agents/hooks/lib/executable_platform.sh" "$target_home/.agents/hooks/lib/platform.sh"
+    cp "$REPO_ROOT/home/dot_agents/hooks/bin/executable_agent-signal.sh" "$target_home/.agents/hooks/bin/agent-signal.sh"
+    cp "$REPO_ROOT/home/dot_agents/hooks/bin/executable_agent-attention.sh" "$target_home/.agents/hooks/bin/agent-attention.sh"
+    cp "$REPO_ROOT/home/dot_agents/hooks/bin/executable_agent-finished.sh" "$target_home/.agents/hooks/bin/agent-finished.sh"
+    cp "$REPO_ROOT/home/dot_agents/hooks/bin/executable_agent-danger.sh" "$target_home/.agents/hooks/bin/agent-danger.sh"
+    chmod +x \
+        "$target_home/.agents/hooks/lib/notify.sh" \
+        "$target_home/.agents/hooks/lib/platform.sh" \
+        "$target_home/.agents/hooks/bin/agent-signal.sh" \
+        "$target_home/.agents/hooks/bin/agent-attention.sh" \
+        "$target_home/.agents/hooks/bin/agent-finished.sh" \
+        "$target_home/.agents/hooks/bin/agent-danger.sh"
 }
 
 setup_shared_hooks_home() {
@@ -70,8 +143,17 @@ setup_shared_hooks_home() {
     install_shared_hooks_home "$SHARED_HOOKS_HOME"
 }
 
+setup_signal_hooks_home() {
+    SIGNAL_HOOKS_HOME="$(mktemp -d)"
+    install_signal_hooks_home "$SIGNAL_HOOKS_HOME"
+}
+
 teardown_shared_hooks_home() {
     rm -rf "$SHARED_HOOKS_HOME"
+}
+
+teardown_signal_hooks_home() {
+    rm -rf "$SIGNAL_HOOKS_HOME"
 }
 
 setup_bash_policy_home() {
@@ -181,6 +263,378 @@ EOFMOCK
     [ "$status" -eq 0 ]
     echo "$output" | grep -q "\[NOTICE\]"
     rm -rf "$EMPTY_DIR"
+}
+
+@test "notify.sh: macos send_notification handles multiline title and message" {
+    setup_signal_hooks_home
+    MOCK_DIR="$(mktemp -d)"
+    CALLS="$MOCK_DIR/calls.log"
+    TITLE_CAPTURE="$MOCK_DIR/title.capture"
+    MESSAGE_CAPTURE="$MOCK_DIR/message.capture"
+    touch "$CALLS"
+    ln -s "$(command -v dirname)" "$MOCK_DIR/dirname"
+    cat > "$MOCK_DIR/uname" <<'EOFMOCK'
+#!/bin/bash
+printf 'Darwin\n'
+EOFMOCK
+    chmod +x "$MOCK_DIR/uname"
+    cat > "$MOCK_DIR/osascript" <<EOFMOCK
+#!/bin/bash
+printf '%s' "\$AGENT_SIGNAL_TITLE" > "$TITLE_CAPTURE"
+printf '%s' "\$AGENT_SIGNAL_MESSAGE" > "$MESSAGE_CAPTURE"
+printf '%s\n' "\$@" >> "$CALLS"
+EOFMOCK
+    chmod +x "$MOCK_DIR/osascript"
+
+    run env HOME="$SIGNAL_HOOKS_HOME" PATH="$MOCK_DIR" XDG_SESSION_ID="$(mktemp -u codex-macos-notify.XXXXXX)" /bin/bash -c '
+        . "$HOME/.agents/hooks/lib/notify.sh"
+        title=$'"'"'Title "one"\nline two'"'"'
+        message=$'"'"'Message "two"\nline three'"'"'
+        send_notification "$title" "$message"
+    '
+    [ "$status" -eq 0 ]
+    EXPECTED_TITLE="$MOCK_DIR/expected-title"
+    EXPECTED_MESSAGE="$MOCK_DIR/expected-message"
+    printf '%s' $'Title "one"\nline two' > "$EXPECTED_TITLE"
+    printf '%s' $'Message "two"\nline three' > "$EXPECTED_MESSAGE"
+    cmp -s "$EXPECTED_TITLE" "$TITLE_CAPTURE"
+    cmp -s "$EXPECTED_MESSAGE" "$MESSAGE_CAPTURE"
+    grep -Fq 'set agentTitle to system attribute "AGENT_SIGNAL_TITLE"' "$CALLS"
+    grep -Fq 'set agentMessage to system attribute "AGENT_SIGNAL_MESSAGE"' "$CALLS"
+    grep -Fq 'display notification agentMessage with title agentTitle' "$CALLS"
+    rm -rf "$MOCK_DIR"
+    teardown_signal_hooks_home
+}
+
+# ---------------------------------------------------------------------------
+# shared signal runtime and wrappers
+# ---------------------------------------------------------------------------
+
+@test "agent-signal.sh: exists and is executable" {
+    setup_signal_hooks_home
+    [ -x "$SIGNAL_HOOKS_HOME/.agents/hooks/bin/agent-signal.sh" ]
+    teardown_signal_hooks_home
+}
+
+@test "agent-signal.sh: emits the WSL attention synth pattern" {
+    setup_signal_hooks_home
+    MOCK_DIR="$(mktemp -d)"
+    CALLS="$MOCK_DIR/calls.log"
+    touch "$CALLS"
+    cat > "$MOCK_DIR/play" <<EOFMOCK
+#!/bin/bash
+printf 'play %s\n' "\$*" >> "$CALLS"
+EOFMOCK
+    chmod +x "$MOCK_DIR/play"
+
+    run env HOME="$SIGNAL_HOOKS_HOME" PATH="$MOCK_DIR:$PATH" WSL_DISTRO_NAME=Ubuntu bash -c "
+        . '$SIGNAL_HOOKS_HOME/.agents/hooks/lib/notify.sh'
+        emit_agent_signal attention Agent
+    "
+    [ "$status" -eq 0 ]
+    expected='play -n synth 0.22 sine 784 vol 0.12 fade q 0.01 0.22 0.06'
+    [ "$(cat "$CALLS")" = "$expected" ]
+    rm -rf "$MOCK_DIR"
+    teardown_signal_hooks_home
+}
+
+@test "agent-signal.sh: executes the wrapper entrypoint directly" {
+    setup_signal_hooks_home
+    MOCK_DIR="$(mktemp -d)"
+    CALLS="$MOCK_DIR/calls.log"
+    touch "$CALLS"
+    cat > "$MOCK_DIR/play" <<EOFMOCK
+#!/bin/bash
+printf 'play %s\n' "\$*" >> "$CALLS"
+EOFMOCK
+    chmod +x "$MOCK_DIR/play"
+
+    run env HOME="$SIGNAL_HOOKS_HOME" PATH="$MOCK_DIR:$PATH" WSL_DISTRO_NAME=Ubuntu XDG_SESSION_ID="$(mktemp -u codex-agent-signal.XXXXXX)" "$SIGNAL_HOOKS_HOME/.agents/hooks/bin/agent-signal.sh" attention Agent
+    [ "$status" -eq 0 ]
+    [ "$(cat "$CALLS")" = 'play -n synth 0.22 sine 784 vol 0.12 fade q 0.01 0.22 0.06' ]
+    rm -rf "$MOCK_DIR"
+    teardown_signal_hooks_home
+}
+
+@test "agent-signal.sh: falls back to play when notify-send fails on linux" {
+    setup_signal_hooks_home
+    MOCK_DIR="$(mktemp -d)"
+    CALLS="$MOCK_DIR/calls.log"
+    touch "$CALLS"
+    ln -s "$(command -v dirname)" "$MOCK_DIR/dirname"
+    cat > "$MOCK_DIR/uname" <<'EOFMOCK'
+#!/bin/bash
+printf 'Linux\n'
+EOFMOCK
+    chmod +x "$MOCK_DIR/uname"
+    cat > "$MOCK_DIR/notify-send" <<'EOFMOCK'
+#!/bin/bash
+printf 'raw notify-send boom: %s\n' "$*" >&2
+exit 1
+EOFMOCK
+    chmod +x "$MOCK_DIR/notify-send"
+    cat > "$MOCK_DIR/play" <<EOFMOCK
+#!/bin/bash
+printf 'play %s\n' "\$*" >> "$CALLS"
+EOFMOCK
+    chmod +x "$MOCK_DIR/play"
+
+    run env HOME="$SIGNAL_HOOKS_HOME" PATH="$MOCK_DIR" XDG_SESSION_ID="$(mktemp -u codex-linux-fallback.XXXXXX)" /bin/bash -c '
+        . "$HOME/.agents/hooks/lib/notify.sh"
+        emit_agent_signal attention Agent
+    '
+    [ "$status" -eq 0 ]
+    [ "$(cat "$CALLS")" = 'play -n synth 0.16 sine 880 vol 0.10 fade q 0.01 0.16 0.05' ]
+    printf '%s' "$output" | grep -q '\[agent-signal\]'
+    printf '%s' "$output" | grep -q 'platform=linux event=attention policy=toast+sound'
+    ! printf '%s' "$output" | grep -q 'raw notify-send boom'
+    rm -rf "$MOCK_DIR"
+    teardown_signal_hooks_home
+}
+
+@test "agent-signal.sh: macos signal path handles multiline agent and message" {
+    setup_signal_hooks_home
+    MOCK_DIR="$(mktemp -d)"
+    CALLS="$MOCK_DIR/calls.log"
+    TITLE_CAPTURE="$MOCK_DIR/title.capture"
+    MESSAGE_CAPTURE="$MOCK_DIR/message.capture"
+    touch "$CALLS"
+    ln -s "$(command -v dirname)" "$MOCK_DIR/dirname"
+    cat > "$MOCK_DIR/uname" <<'EOFMOCK'
+#!/bin/bash
+printf 'Darwin\n'
+EOFMOCK
+    chmod +x "$MOCK_DIR/uname"
+    cat > "$MOCK_DIR/osascript" <<EOFMOCK
+#!/bin/bash
+printf '%s' "\$AGENT_SIGNAL_TITLE" > "$TITLE_CAPTURE"
+printf '%s' "\$AGENT_SIGNAL_MESSAGE" > "$MESSAGE_CAPTURE"
+printf '%s\n' "\$@" >> "$CALLS"
+EOFMOCK
+    chmod +x "$MOCK_DIR/osascript"
+
+    run env HOME="$SIGNAL_HOOKS_HOME" PATH="$MOCK_DIR" XDG_SESSION_ID="$(mktemp -u codex-macos-signal.XXXXXX)" /bin/bash -c '
+        . "$HOME/.agents/hooks/lib/notify.sh"
+        emit_agent_signal attention $'"'"'Agent "QA"\rpath'"'"' $'"'"'Message "quoted"\rbackslash'"'"'
+    '
+    [ "$status" -eq 0 ]
+    EXPECTED_TITLE="$MOCK_DIR/expected-title"
+    EXPECTED_MESSAGE="$MOCK_DIR/expected-message"
+    printf '%s' $'Agent "QA"\rpath' > "$EXPECTED_TITLE"
+    printf '%s' $'Message "quoted"\rbackslash' > "$EXPECTED_MESSAGE"
+    cmp -s "$EXPECTED_TITLE" "$TITLE_CAPTURE"
+    cmp -s "$EXPECTED_MESSAGE" "$MESSAGE_CAPTURE"
+    grep -Fq 'set agentTitle to system attribute "AGENT_SIGNAL_TITLE"' "$CALLS"
+    grep -Fq 'set agentMessage to system attribute "AGENT_SIGNAL_MESSAGE"' "$CALLS"
+    grep -Fq 'display notification agentMessage with title agentTitle sound name "Glass"' "$CALLS"
+    rm -rf "$MOCK_DIR"
+    teardown_signal_hooks_home
+}
+
+@test "agent-signal.sh: falls back to beep when afplay fails on macos" {
+    setup_signal_hooks_home
+    MOCK_DIR="$(mktemp -d)"
+    CALLS="$MOCK_DIR/calls.log"
+    touch "$CALLS"
+    ln -s "$(command -v dirname)" "$MOCK_DIR/dirname"
+    cat > "$MOCK_DIR/uname" <<'EOFMOCK'
+#!/bin/bash
+printf 'Darwin\n'
+EOFMOCK
+    chmod +x "$MOCK_DIR/uname"
+    cat > "$MOCK_DIR/afplay" <<'EOFMOCK'
+#!/bin/bash
+printf 'afplay failed: %s\n' "$*" >&2
+exit 1
+EOFMOCK
+    chmod +x "$MOCK_DIR/afplay"
+    cat > "$MOCK_DIR/osascript" <<EOFMOCK
+#!/bin/bash
+printf '%s\n' "\$@" >> "$CALLS"
+EOFMOCK
+    chmod +x "$MOCK_DIR/osascript"
+
+    run env HOME="$SIGNAL_HOOKS_HOME" PATH="$MOCK_DIR" XDG_SESSION_ID="$(mktemp -u codex-macos-afplay.XXXXXX)" /bin/bash -c '
+        . "$HOME/.agents/hooks/lib/notify.sh"
+        run_sound_only danger
+    '
+    [ "$status" -eq 0 ]
+    grep -Fq -- '-e' "$CALLS"
+    grep -Fq 'beep' "$CALLS"
+    ! printf '%s' "$output" | grep -q 'afplay failed'
+    rm -rf "$MOCK_DIR"
+    teardown_signal_hooks_home
+}
+
+@test "agent-signal.sh: emits the WSL finished synth sequence" {
+    setup_signal_hooks_home
+    MOCK_DIR="$(mktemp -d)"
+    CALLS="$MOCK_DIR/calls.log"
+    touch "$CALLS"
+    cat > "$MOCK_DIR/play" <<EOFMOCK
+#!/bin/bash
+printf 'play %s\n' "\$*" >> "$CALLS"
+EOFMOCK
+    chmod +x "$MOCK_DIR/play"
+    cat > "$MOCK_DIR/sleep" <<EOFMOCK
+#!/bin/bash
+printf 'sleep %s\n' "\$*" >> "$CALLS"
+EOFMOCK
+    chmod +x "$MOCK_DIR/sleep"
+
+    run env HOME="$SIGNAL_HOOKS_HOME" PATH="$MOCK_DIR:$PATH" WSL_DISTRO_NAME=Ubuntu bash -c "
+        . '$SIGNAL_HOOKS_HOME/.agents/hooks/lib/notify.sh'
+        emit_agent_signal finished Agent
+    "
+    [ "$status" -eq 0 ]
+    expected=$(cat <<'EOFEXPECTED'
+play -n synth 0.18 sine 740 vol 0.12 fade q 0.01 0.18 0.05
+sleep 0.3
+play -n synth 0.18 sine 988 vol 0.10 fade q 0.01 0.18 0.05
+EOFEXPECTED
+)
+    [ "$(cat "$CALLS")" = "$expected" ]
+    rm -rf "$MOCK_DIR"
+    teardown_signal_hooks_home
+}
+
+@test "agent-signal.sh: emits the WSL danger synth pattern" {
+    setup_signal_hooks_home
+    MOCK_DIR="$(mktemp -d)"
+    CALLS="$MOCK_DIR/calls.log"
+    touch "$CALLS"
+    cat > "$MOCK_DIR/play" <<EOFMOCK
+#!/bin/bash
+printf 'play %s\n' "\$*" >> "$CALLS"
+EOFMOCK
+    chmod +x "$MOCK_DIR/play"
+
+    run env HOME="$SIGNAL_HOOKS_HOME" PATH="$MOCK_DIR:$PATH" WSL_DISTRO_NAME=Ubuntu bash -c "
+        . '$SIGNAL_HOOKS_HOME/.agents/hooks/lib/notify.sh'
+        emit_agent_signal danger Agent
+    "
+    [ "$status" -eq 0 ]
+    expected='play -n synth 0.28 triangle 660-990 vol 0.11 fade q 0.01 0.28 0.08'
+    [ "$(cat "$CALLS")" = "$expected" ]
+    rm -rf "$MOCK_DIR"
+    teardown_signal_hooks_home
+}
+
+@test "agent-signal.sh: warns once per session with required fields" {
+    setup_signal_hooks_home
+    UTIL_DIR="$(mktemp -d)"
+    SESSION_ID="$(mktemp -u codex-test-signal.XXXXXX)"
+    ln -s "$(command -v dirname)" "$UTIL_DIR/dirname"
+    ln -s "$(command -v uname)" "$UTIL_DIR/uname"
+    ln -s "$(command -v ps)" "$UTIL_DIR/ps"
+    ln -s "$(command -v tr)" "$UTIL_DIR/tr"
+
+    run env HOME="$SIGNAL_HOOKS_HOME" PATH="$UTIL_DIR" WSL_DISTRO_NAME=Ubuntu XDG_SESSION_ID="$SESSION_ID" /bin/bash -c '
+        . "$HOME/.agents/hooks/lib/notify.sh"
+        {
+            emit_agent_signal finished Agent
+            emit_agent_signal finished Agent
+        } 2>&1
+    '
+    [ "$status" -eq 0 ]
+    [ "$(printf '%s' "$output" | grep -c '\[agent-signal\]')" -eq 1 ]
+    printf '%s' "$output" | grep -q "platform=wsl event=finished policy=sound"
+    printf '%s' "$output" | grep -q "requested channels: sound"
+    printf '%s' "$output" | grep -q "available implementations: toast=none sound=none"
+    printf '%s' "$output" | grep -q "toast checked: notify-send osascript"
+    printf '%s' "$output" | grep -q "sound checked: play afplay osascript"
+    rm -rf "$UTIL_DIR"
+    teardown_signal_hooks_home
+}
+
+@test "agent-attention.sh: exists and is executable" {
+    setup_signal_hooks_home
+    [ -x "$SIGNAL_HOOKS_HOME/.agents/hooks/bin/agent-attention.sh" ]
+    teardown_signal_hooks_home
+}
+
+@test "agent-attention.sh: delegates the attention signal" {
+    setup_signal_hooks_home
+    MOCK_DIR="$(mktemp -d)"
+    CALLS="$MOCK_DIR/calls.log"
+    touch "$CALLS"
+    cat > "$SIGNAL_HOOKS_HOME/.agents/hooks/bin/agent-signal.sh" <<EOFMOCK
+#!/bin/bash
+printf '%s\n' "\$@" >> "$CALLS"
+EOFMOCK
+    chmod +x "$SIGNAL_HOOKS_HOME/.agents/hooks/bin/agent-signal.sh"
+
+    run env HOME="$SIGNAL_HOOKS_HOME" PATH="$MOCK_DIR:$PATH" "$SIGNAL_HOOKS_HOME/.agents/hooks/bin/agent-attention.sh"
+    [ "$status" -eq 0 ]
+    expected=$(cat <<'EOFEXPECTED'
+attention
+Agent
+Needs your attention
+EOFEXPECTED
+)
+    [ "$(cat "$CALLS")" = "$expected" ]
+    rm -rf "$MOCK_DIR"
+    teardown_signal_hooks_home
+}
+
+@test "agent-finished.sh: exists and is executable" {
+    setup_signal_hooks_home
+    [ -x "$SIGNAL_HOOKS_HOME/.agents/hooks/bin/agent-finished.sh" ]
+    teardown_signal_hooks_home
+}
+
+@test "agent-finished.sh: delegates the finished signal" {
+    setup_signal_hooks_home
+    MOCK_DIR="$(mktemp -d)"
+    CALLS="$MOCK_DIR/calls.log"
+    touch "$CALLS"
+    cat > "$SIGNAL_HOOKS_HOME/.agents/hooks/bin/agent-signal.sh" <<EOFMOCK
+#!/bin/bash
+printf '%s\n' "\$@" >> "$CALLS"
+EOFMOCK
+    chmod +x "$SIGNAL_HOOKS_HOME/.agents/hooks/bin/agent-signal.sh"
+
+    run env HOME="$SIGNAL_HOOKS_HOME" PATH="$MOCK_DIR:$PATH" "$SIGNAL_HOOKS_HOME/.agents/hooks/bin/agent-finished.sh"
+    [ "$status" -eq 0 ]
+    expected=$(cat <<'EOFEXPECTED'
+finished
+Agent
+Finished
+EOFEXPECTED
+)
+    [ "$(cat "$CALLS")" = "$expected" ]
+    rm -rf "$MOCK_DIR"
+    teardown_signal_hooks_home
+}
+
+@test "agent-danger.sh: exists and is executable" {
+    setup_signal_hooks_home
+    [ -x "$SIGNAL_HOOKS_HOME/.agents/hooks/bin/agent-danger.sh" ]
+    teardown_signal_hooks_home
+}
+
+@test "agent-danger.sh: delegates the danger signal" {
+    setup_signal_hooks_home
+    MOCK_DIR="$(mktemp -d)"
+    CALLS="$MOCK_DIR/calls.log"
+    touch "$CALLS"
+    cat > "$SIGNAL_HOOKS_HOME/.agents/hooks/bin/agent-signal.sh" <<EOFMOCK
+#!/bin/bash
+printf '%s\n' "\$@" >> "$CALLS"
+EOFMOCK
+    chmod +x "$SIGNAL_HOOKS_HOME/.agents/hooks/bin/agent-signal.sh"
+
+    run env HOME="$SIGNAL_HOOKS_HOME" PATH="$MOCK_DIR:$PATH" "$SIGNAL_HOOKS_HOME/.agents/hooks/bin/agent-danger.sh"
+    [ "$status" -eq 0 ]
+    expected=$(cat <<'EOFEXPECTED'
+danger
+Agent
+Dangerous command blocked
+EOFEXPECTED
+)
+    [ "$(cat "$CALLS")" = "$expected" ]
+    rm -rf "$MOCK_DIR"
+    teardown_signal_hooks_home
 }
 
 # ---------------------------------------------------------------------------
@@ -493,46 +947,6 @@ EOFMOCK
     [ "$status" -eq 2 ]
 }
 
-@test "notify-attention.sh: exists and is executable" {
-    [ -x "$NOTIFY_ATTENTION_SOURCE_SH" ]
-}
-
-@test "notify-attention.sh: delegates to notify.sh" {
-    setup_shared_hooks_home
-    MOCK_DIR="$(mktemp -d)"
-    CALLS="$MOCK_DIR/calls.log"
-    printf '#!/bin/bash\necho \"$@\" >> \"%s\"\n' "$CALLS" > "$MOCK_DIR/notify-send"
-    chmod +x "$MOCK_DIR/notify-send"
-
-    run env HOME="$SHARED_HOOKS_HOME" PATH="$MOCK_DIR:$PATH" WSL_DISTRO_NAME=Ubuntu bash "$NOTIFY_ATTENTION_SOURCE_SH"
-    [ "$status" -eq 0 ]
-    [ -f "$CALLS" ]
-    grep -q "Agent" "$CALLS"
-    grep -q "Needs your attention" "$CALLS"
-    rm -rf "$MOCK_DIR"
-    teardown_shared_hooks_home
-}
-
-@test "notify-finished.sh: exists and is executable" {
-    [ -x "$NOTIFY_FINISHED_SOURCE_SH" ]
-}
-
-@test "notify-finished.sh: delegates to notify.sh" {
-    setup_shared_hooks_home
-    MOCK_DIR="$(mktemp -d)"
-    CALLS="$MOCK_DIR/calls.log"
-    printf '#!/bin/bash\necho \"$@\" >> \"%s\"\n' "$CALLS" > "$MOCK_DIR/notify-send"
-    chmod +x "$MOCK_DIR/notify-send"
-
-    run env HOME="$SHARED_HOOKS_HOME" PATH="$MOCK_DIR:$PATH" WSL_DISTRO_NAME=Ubuntu bash "$NOTIFY_FINISHED_SOURCE_SH"
-    [ "$status" -eq 0 ]
-    [ -f "$CALLS" ]
-    grep -q "Agent" "$CALLS"
-    grep -q "Finished" "$CALLS"
-    rm -rf "$MOCK_DIR"
-    teardown_shared_hooks_home
-}
-
 PRE_TOOL_USE_SH="$CLAUDE_PRE_TOOL_USE_SH"
 
 # Helper: run hook with JSON input
@@ -734,22 +1148,21 @@ STOP_SH="$CLAUDE_STOP_SH"
 }
 
 @test "notification.sh: calls send_notification on valid input" {
-    MOCK_DIR="$(mktemp -d)"
-    CALLS="$MOCK_DIR/calls.log"
-    printf '#!/bin/bash\necho "$@" >> "%s"\n' "$CALLS" > "$MOCK_DIR/notify-send"
-    chmod +x "$MOCK_DIR/notify-send"
     setup_shared_hooks_home
+    CALLS="$(mktemp)"
+    cat > "$SHARED_HOOKS_HOME/.agents/hooks/bin/agent-attention.sh" <<EOF
+#!/bin/bash
+printf '%s\n' "\$@" >> "$CALLS"
+EOF
+    chmod +x "$SHARED_HOOKS_HOME/.agents/hooks/bin/agent-attention.sh"
 
     run bash -c "
         export HOME=\"$SHARED_HOOKS_HOME\"
-        export PATH=\"$MOCK_DIR:\$PATH\"
-        export WSL_DISTRO_NAME=Ubuntu
         printf '{}' | '$NOTIFICATION_SH'
     "
     [ "$status" -eq 0 ]
-    [ -f "$CALLS" ]
-    grep -q "Claude Code" "$CALLS"
-    rm -rf "$MOCK_DIR"
+    [ "$(cat "$CALLS")" = $'Claude Code\nNeeds your attention' ]
+    rm -f "$CALLS"
     teardown_shared_hooks_home
 }
 
@@ -768,7 +1181,7 @@ STOP_SH="$CLAUDE_STOP_SH"
 @test "notification.sh: fails closed when shared notifier entrypoint is not executable" {
     EMPTY_HOME="$(mktemp -d)"
     mkdir -p "$EMPTY_HOME/.agents/hooks/bin"
-    printf '#!/bin/bash\nexit 0\n' > "$EMPTY_HOME/.agents/hooks/bin/notify-attention.sh"
+    printf '#!/bin/bash\nexit 0\n' > "$EMPTY_HOME/.agents/hooks/bin/agent-attention.sh"
 
     run bash -c "
         export HOME=\"$EMPTY_HOME\"
@@ -818,27 +1231,29 @@ STOP_SH="$CLAUDE_STOP_SH"
 }
 
 @test "stop.sh: notifies when elapsed time >= 10 seconds" {
-    MOCK_DIR="$(mktemp -d)"
-    CALLS="$MOCK_DIR/calls.log"
-    printf '#!/bin/bash\necho "$@" >> "%s"\n' "$CALLS" > "$MOCK_DIR/notify-send"
-    chmod +x "$MOCK_DIR/notify-send"
     setup_shared_hooks_home
+    CALLS="$(mktemp)"
+    MARKER_DIR="$(mktemp -d)"
+    cat > "$SHARED_HOOKS_HOME/.agents/hooks/bin/agent-finished.sh" <<EOF
+#!/bin/bash
+printf '%s\n' "\$@" >> "$CALLS"
+EOF
+    chmod +x "$SHARED_HOOKS_HOME/.agents/hooks/bin/agent-finished.sh"
 
     SESSION="test-session-elapsed-$$"
     # Write a marker with a timestamp 15 seconds in the past
     PAST=$(( $(date +%s) - 15 ))
-    printf '%s\n' "$PAST" > "$MOCK_DIR/claude-last-stop-$SESSION"
+    printf '%s\n' "$PAST" > "$MARKER_DIR/claude-last-stop-$SESSION"
 
     run bash -c "
         export HOME=\"$SHARED_HOOKS_HOME\"
-        export TMPDIR=\"$MOCK_DIR\"
-        export PATH=\"$MOCK_DIR:\$PATH\"
-        export WSL_DISTRO_NAME=Ubuntu
+        export TMPDIR=\"$MARKER_DIR\"
         printf '{\"stop_hook_active\":false,\"session_id\":\"$SESSION\"}' | '$STOP_SH'
     "
     [ "$status" -eq 0 ]
-    [ -f "$CALLS" ] && [ -s "$CALLS" ]
-    rm -rf "$MOCK_DIR"
+    [ "$(cat "$CALLS")" = $'Claude Code\nFinished' ]
+    rm -f "$CALLS"
+    rm -rf "$MARKER_DIR"
     teardown_shared_hooks_home
 }
 

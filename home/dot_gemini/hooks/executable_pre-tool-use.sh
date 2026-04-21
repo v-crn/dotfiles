@@ -3,6 +3,17 @@
 
 INPUT="$(cat)"
 SHARED_CHECK_PREFLIGHT="$HOME/.agents/hooks/bin/check-preflight.sh"
+SHARED_DANGER="$HOME/.agents/hooks/bin/agent-danger.sh"
+
+should_emit_danger_signal() {
+    case "$1" in
+        *'Blocked: destructive rm detected.'*|*'Blocked: destructive SQL command detected.'*|*'Blocked: reading sensitive env file via shell:'*)
+            return 0
+            ;;
+    esac
+
+    return 1
+}
 
 if [ ! -x "$SHARED_CHECK_PREFLIGHT" ]; then
     printf 'Blocked: missing shared hook binary: %s\n' "$SHARED_CHECK_PREFLIGHT" >&2
@@ -40,4 +51,25 @@ case "$TOOL_NAME" in
         ;;
 esac
 
-exec "$SHARED_CHECK_PREFLIGHT" "$TOOL_NAME" "$FILE_PATH" "$COMMAND"
+preflight_stderr_file="$(mktemp "${TMPDIR:-/tmp}/gemini-preflight.XXXXXX")" || exit 2
+
+if "$SHARED_CHECK_PREFLIGHT" "$TOOL_NAME" "$FILE_PATH" "$COMMAND" 2>"$preflight_stderr_file"; then
+    STATUS=0
+else
+    STATUS=$?
+fi
+
+preflight_output="$(cat "$preflight_stderr_file")"
+rm -f "$preflight_stderr_file"
+
+if [ -n "$preflight_output" ]; then
+    printf '%s\n' "$preflight_output" >&2
+fi
+
+if [ "$STATUS" -eq 2 ] && [ "$TOOL_NAME" = "Bash" ] && [ -x "$SHARED_DANGER" ]; then
+    if should_emit_danger_signal "$preflight_output"; then
+        "$SHARED_DANGER" "Gemini" "Dangerous command blocked"
+    fi
+fi
+
+exit "$STATUS"

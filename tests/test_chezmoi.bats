@@ -48,7 +48,7 @@ setup() {
     run fd . "$REPO_ROOT/$CHEZMOI_ROOT/dot_agents/hooks" -tf
     [ "$status" -eq 0 ]
     [[ "$output" == *"executable_check-preflight.sh"* ]]
-    [[ "$output" == *"executable_notify-finished.sh"* ]]
+    [[ "$output" == *"executable_agent-finished.sh"* ]]
 
     run fd . "$REPO_ROOT/$CHEZMOI_ROOT/dot_gemini/hooks" -tf
     [ "$status" -eq 0 ]

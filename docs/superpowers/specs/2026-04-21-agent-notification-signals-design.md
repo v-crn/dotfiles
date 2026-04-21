@@ -82,6 +82,8 @@ home/dot_agents/hooks/
 
 The shared executable names intentionally express semantic signals rather than
 agent hook names.
+The deployed filenames keep the `.sh` suffix so they stay consistent with the
+rest of the hook tree and remain easy to invoke from adapters.
 
 Planned API:
 
@@ -127,6 +129,9 @@ Supported command candidates:
 - toast: none
 
 No Windows-side fallback is allowed.
+WSL detection should not depend only on `WSL_DISTRO_NAME`; when the runtime is
+inside a Linux container on top of WSL, `osrelease` or `version` may still
+contain `microsoft` / `WSL` and should be treated as WSL.
 
 ### Linux
 

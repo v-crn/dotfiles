@@ -3,7 +3,7 @@
 # Delegates completion notifications to the shared notifier.
 
 INPUT="$(cat)"
-SHARED_FINISHED="$HOME/.agents/hooks/bin/notify-finished.sh"
+SHARED_FINISHED="$HOME/.agents/hooks/bin/agent-finished.sh"
 
 if ! command -v jq >/dev/null 2>&1; then
     printf 'Stop hook blocked: missing jq for Codex payload parsing.\n' >&2

@@ -20,11 +20,11 @@
 
 | 区分 | パス | 用途 |
 | --- | --- | --- |
-| Shared core | `~/.agents/hooks/lib/` | `.env` 判定、危険 Bash 判定、通知 transport |
-| Shared entrypoints | `~/.agents/hooks/bin/` | `check-preflight.sh` `notify-attention.sh` `notify-finished.sh` |
+| Shared core | `~/.agents/hooks/lib/` | `.env` 判定、危険 Bash 判定、signal runtime |
+| Shared entrypoints | `~/.agents/hooks/bin/` | `check-preflight.sh` `agent-signal.sh` `agent-attention.sh` `agent-finished.sh` `agent-danger.sh` |
 | Agent adapters | `~/.claude/hooks/` `~/.codex/hooks/` `~/.gemini/hooks/` | 各ツール固有の stdin/stdout 変換 |
 
-共有コアには判定ロジックと通知実装を集約し、各エージェント配下の hook は薄い adapter として入力形式の違いだけを吸収する。これにより、ポリシー変更や通知経路の変更は `~/.agents/hooks/` 側で一元管理できる。
+共有コアには判定ロジックと signal 実装を集約し、各エージェント配下の hook は薄い adapter として入力形式の違いだけを吸収する。これにより、ポリシー変更や toast/sound 経路の変更は `~/.agents/hooks/` 側で一元管理できる。
 
 ## 各ツールの参照方式
 
@@ -53,7 +53,7 @@
 
 | 条件 | 判定方法 | 追加されるルール |
 | --- | --- | --- |
-| WSL 環境 | `chezmoi.kernel.osrelease` に `"microsoft"` を含む | `assets/agents/rules/wsl/coding-style.md` |
+| WSL 環境 | `chezmoi.kernel.osrelease` に `"microsoft"` を含む。実行時 hook では `WSL_DISTRO_NAME` と Linux kernel の `osrelease` / `version` も併用する | `assets/agents/rules/wsl/coding-style.md` |
 | 非 personal ワークスペース | `workspace != "personal"`（`chezmoi.toml` で設定） | `assets/agents/rules/workspace/<name>.md` |
 
 ## ワークスペース設定

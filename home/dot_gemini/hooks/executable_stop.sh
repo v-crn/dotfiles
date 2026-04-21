@@ -3,7 +3,7 @@
 
 cat >/dev/null
 
-SHARED_FINISHED="$HOME/.agents/hooks/bin/notify-finished.sh"
+SHARED_FINISHED="$HOME/.agents/hooks/bin/agent-finished.sh"
 
 if [ ! -x "$SHARED_FINISHED" ]; then
     printf 'Blocked: missing shared hook binary: %s\n' "$SHARED_FINISHED" >&2

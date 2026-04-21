@@ -1,9 +1,9 @@
 #!/bin/bash
 # Claude Code stop adapter.
-# Keeps Claude-specific timing and loop-guard behavior, then delegates to the shared notifier.
+# Keeps Claude-specific timing and loop-guard behavior, then delegates to the shared finished signal.
 
 INPUT="$(cat)"
-SHARED_FINISHED="$HOME/.agents/hooks/bin/notify-finished.sh"
+SHARED_FINISHED="$HOME/.agents/hooks/bin/agent-finished.sh"
 
 # Guard: stop_hook_active=true means we're already in a stop hook loop — exit early
 if [ "$(printf '%s' "$INPUT" | jq -r '.stop_hook_active // false')" = "true" ]; then

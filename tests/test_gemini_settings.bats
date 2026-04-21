@@ -24,16 +24,20 @@ install_shared_hooks_home() {
     cp "$REPO_ROOT/home/dot_agents/hooks/lib/executable_env_policy.sh" "$target_home/.agents/hooks/lib/env_policy.sh"
     cp "$REPO_ROOT/home/dot_agents/hooks/lib/executable_bash_policy.sh" "$target_home/.agents/hooks/lib/bash_policy.sh"
     cp "$REPO_ROOT/home/dot_agents/hooks/bin/executable_check-preflight.sh" "$target_home/.agents/hooks/bin/check-preflight.sh"
-    cp "$REPO_ROOT/home/dot_agents/hooks/bin/executable_notify-attention.sh" "$target_home/.agents/hooks/bin/notify-attention.sh"
-    cp "$REPO_ROOT/home/dot_agents/hooks/bin/executable_notify-finished.sh" "$target_home/.agents/hooks/bin/notify-finished.sh"
+    cp "$REPO_ROOT/home/dot_agents/hooks/bin/executable_agent-signal.sh" "$target_home/.agents/hooks/bin/agent-signal.sh"
+    cp "$REPO_ROOT/home/dot_agents/hooks/bin/executable_agent-attention.sh" "$target_home/.agents/hooks/bin/agent-attention.sh"
+    cp "$REPO_ROOT/home/dot_agents/hooks/bin/executable_agent-finished.sh" "$target_home/.agents/hooks/bin/agent-finished.sh"
+    cp "$REPO_ROOT/home/dot_agents/hooks/bin/executable_agent-danger.sh" "$target_home/.agents/hooks/bin/agent-danger.sh"
     chmod +x \
         "$target_home/.agents/hooks/lib/notify.sh" \
         "$target_home/.agents/hooks/lib/platform.sh" \
         "$target_home/.agents/hooks/lib/env_policy.sh" \
         "$target_home/.agents/hooks/lib/bash_policy.sh" \
         "$target_home/.agents/hooks/bin/check-preflight.sh" \
-        "$target_home/.agents/hooks/bin/notify-attention.sh" \
-        "$target_home/.agents/hooks/bin/notify-finished.sh"
+        "$target_home/.agents/hooks/bin/agent-signal.sh" \
+        "$target_home/.agents/hooks/bin/agent-attention.sh" \
+        "$target_home/.agents/hooks/bin/agent-finished.sh" \
+        "$target_home/.agents/hooks/bin/agent-danger.sh"
 }
 
 install_gemini_hooks_home() {
@@ -161,7 +165,7 @@ EOF
     install_shared_hooks_home "$HOME"
     install_gemini_hooks_home "$HOME"
 
-    run env HOME="$HOME" bash "$HOME/.gemini/hooks/pre-tool-use.sh" <<'EOF'
+    run env HOME="$HOME" "$HOME/.gemini/hooks/pre-tool-use.sh" <<'EOF'
 {"tool_name":"MultiEdit","tool_input":{"file_path":"/project/.env.local"}}
 EOF
 
@@ -178,7 +182,7 @@ printf '%s|%s|%s\n' "$1" "$2" "$3"
 EOF
     chmod +x "$HOME/.agents/hooks/bin/check-preflight.sh"
 
-    run env HOME="$HOME" bash "$HOME/.gemini/hooks/pre-tool-use.sh" <<'EOF'
+    run env HOME="$HOME" "$HOME/.gemini/hooks/pre-tool-use.sh" <<'EOF'
 {"tool_name":"Bash","tool_input":{"command":"echo hi"}}
 EOF
 
@@ -196,7 +200,7 @@ printf '%s|%s|%s\n' "$1" "$2" "$3"
 EOF
     chmod +x "$HOME/.agents/hooks/bin/check-preflight.sh"
 
-    run env HOME="$HOME" bash "$HOME/.gemini/hooks/pre-tool-use.sh" <<'EOF'
+    run env HOME="$HOME" "$HOME/.gemini/hooks/pre-tool-use.sh" <<'EOF'
 {"tool_name":"Read","tool_input":{"file_path":"/project/.env"}}
 EOF
 
@@ -204,34 +208,94 @@ EOF
     [ "$output" = "Read|/project/.env|" ]
 }
 
-@test "notification adapter delegates to shared notifier" {
+@test "notification adapter delegates to agent-attention" {
     install_shared_hooks_home "$HOME"
     install_gemini_hooks_home "$HOME"
-    MOCK_DIR="$(mktemp -d)"
-    CALLS="$MOCK_DIR/calls.log"
-    printf '#!/bin/bash\necho "$@" >> "%s"\n' "$CALLS" > "$MOCK_DIR/notify-send"
-    chmod +x "$MOCK_DIR/notify-send"
+    CALLS="$(mktemp)"
+    cat > "$HOME/.agents/hooks/bin/agent-attention.sh" <<EOF
+#!/bin/bash
+printf '%s\n' "\$@" >> "$CALLS"
+EOF
+    chmod +x "$HOME/.agents/hooks/bin/agent-attention.sh"
 
-    run env HOME="$HOME" PATH="$MOCK_DIR:$PATH" WSL_DISTRO_NAME=Ubuntu bash "$HOME/.gemini/hooks/notification.sh" <<<'{}'
-
+    run env HOME="$HOME" "$HOME/.gemini/hooks/notification.sh" <<<'{}'
     [ "$status" -eq 0 ]
-    grep -q "Gemini" "$CALLS"
-    grep -q "Needs your attention" "$CALLS"
-    rm -rf "$MOCK_DIR"
+    [ "$(cat "$CALLS")" = $'Gemini\nNeeds your attention' ]
+    rm -f "$CALLS"
 }
 
-@test "stop adapter delegates to shared notifier" {
+@test "stop adapter delegates to agent-finished" {
     install_shared_hooks_home "$HOME"
     install_gemini_hooks_home "$HOME"
-    MOCK_DIR="$(mktemp -d)"
-    CALLS="$MOCK_DIR/calls.log"
-    printf '#!/bin/bash\necho "$@" >> "%s"\n' "$CALLS" > "$MOCK_DIR/notify-send"
-    chmod +x "$MOCK_DIR/notify-send"
+    CALLS="$(mktemp)"
+    cat > "$HOME/.agents/hooks/bin/agent-finished.sh" <<EOF
+#!/bin/bash
+printf '%s\n' "\$@" >> "$CALLS"
+EOF
+    chmod +x "$HOME/.agents/hooks/bin/agent-finished.sh"
 
-    run env HOME="$HOME" PATH="$MOCK_DIR:$PATH" WSL_DISTRO_NAME=Ubuntu bash "$HOME/.gemini/hooks/stop.sh" <<<'{}'
+    run env HOME="$HOME" "$HOME/.gemini/hooks/stop.sh" <<<'{}'
+    [ "$status" -eq 0 ]
+    [ "$(cat "$CALLS")" = $'Gemini\nFinished' ]
+    rm -f "$CALLS"
+}
+
+@test "pre-tool-use adapter emits agent-danger on denied Bash command" {
+    install_shared_hooks_home "$HOME"
+    install_gemini_hooks_home "$HOME"
+    CALLS="$(mktemp)"
+    cat > "$HOME/.agents/hooks/bin/agent-danger.sh" <<EOF
+#!/bin/bash
+printf '%s\n' "\$@" >> "$CALLS"
+EOF
+    chmod +x "$HOME/.agents/hooks/bin/agent-danger.sh"
+
+    run env HOME="$HOME" "$HOME/.gemini/hooks/pre-tool-use.sh" <<'EOF'
+{"tool_name":"Bash","tool_input":{"command":"rm -rf /"}}
+EOF
+
+    [ "$status" -eq 2 ]
+    [ "$(cat "$CALLS")" = $'Gemini\nDangerous command blocked' ]
+    rm -f "$CALLS"
+}
+
+@test "pre-tool-use adapter does not emit agent-danger on shared library failure" {
+    install_shared_hooks_home "$HOME"
+    install_gemini_hooks_home "$HOME"
+    CALLS="$(mktemp)"
+    cat > "$HOME/.agents/hooks/bin/agent-danger.sh" <<EOF
+#!/bin/bash
+printf '%s\n' "\$@" >> "$CALLS"
+EOF
+    chmod +x "$HOME/.agents/hooks/bin/agent-danger.sh"
+    rm -f "$HOME/.agents/hooks/lib/env_policy.sh" "$HOME/.agents/hooks/lib/executable_env_policy.sh"
+
+    run env HOME="$HOME" "$HOME/.gemini/hooks/pre-tool-use.sh" <<'EOF'
+{"tool_name":"Bash","tool_input":{"command":"rm -rf /"}}
+EOF
+
+    [ "$status" -eq 2 ]
+    printf '%s' "$output" | grep -q 'Blocked: missing shared hook library: env_policy'
+    [ ! -s "$CALLS" ]
+    rm -f "$CALLS"
+}
+
+@test "pre-tool-use adapter preserves sudo warning in stderr" {
+    install_shared_hooks_home "$HOME"
+    install_gemini_hooks_home "$HOME"
+    CALLS="$(mktemp)"
+    cat > "$HOME/.agents/hooks/bin/agent-danger.sh" <<EOF
+#!/bin/bash
+printf '%s\n' "\$@" >> "$CALLS"
+EOF
+    chmod +x "$HOME/.agents/hooks/bin/agent-danger.sh"
+
+    run env HOME="$HOME" "$HOME/.gemini/hooks/pre-tool-use.sh" <<'EOF'
+{"tool_name":"Bash","tool_input":{"command":"sudo apt-get update"}}
+EOF
 
     [ "$status" -eq 0 ]
-    grep -q "Gemini" "$CALLS"
-    grep -q "Finished" "$CALLS"
-    rm -rf "$MOCK_DIR"
+    printf '%s' "$output" | grep -q 'Warning: sudo usage detected.'
+    [ ! -s "$CALLS" ]
+    rm -f "$CALLS"
 }
