@@ -23,7 +23,6 @@ model_reasoning_effort = "medium"
 approval_policy = "on-request"
 sandbox_mode = "workspace-write"
 personality = "Be concise and precise. Prefer minimal, focused changes. Follow existing code conventions."
-notify = ["~/.codex/hooks/notify.sh"]
 
 [tui]
 status_line = [
@@ -38,6 +37,7 @@ notification_condition = "always"
 
 [features]
 memories = true
+codex_hooks = true
 
 [profiles.conservative]
 approval_policy = "on-request"
@@ -72,7 +72,7 @@ fi
 # Backup existing config before every apply
 cp "$TARGET" "${TARGET}.bak"
 
-# Strip managed top-level keys and sections, preserving everything else
+# Strip managed top-level keys and sections, preserving everything else.
 MANAGED_KEYS='model|model_reasoning_effort|approval_policy|sandbox_mode|personality|notify'
 MANAGED_SECTS='tui|features|memories|profiles'
 
