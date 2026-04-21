@@ -3,19 +3,23 @@
     "gitignore": true,
     "ignores": [],
     "config": {
-        // MD003: Header style - Ensure consistent use of ATX style headers (# Header).
+        // MD003: Header style
         "MD003": {
             "style": "atx"
         },
-        // MD007: Unordered list indentation - Set to 2 spaces.
+        // MD007: Unordered list indentation
         "MD007": {
             "indent": 2
         },
-        // Line length is not enforced: docs use Japanese prose and long technical lines.
+        // Line length is not enforced: docs use long technical lines
         "MD013": false,
-        // Inline HTML is used intentionally in some docs.
+        // Inline HTML is used intentionally in some docs
         "MD033": false,
-        // MD041: First line in file should be a top-level heading - Disabled.
-        "MD041": false
+        // MD041: First line in file should be a top-level heading
+        "MD041": false,
+        // Table column style: compact (no extra padding spaces)
+        "MD060": {
+            "style": "compact"
+        }
     }
 }
