@@ -47,8 +47,10 @@ contain only thin adapters.
     bash_policy.sh
   bin/
     check-preflight.sh
-    notify-attention.sh
-    notify-finished.sh
+    agent-signal.sh
+    agent-attention.sh
+    agent-finished.sh
+    agent-danger.sh
 
 ~/.claude/hooks/
   pre-tool-use.sh
@@ -122,19 +124,28 @@ The runtime hook bodies themselves are not stored in `.chezmoiscripts/`.
 
 ### Notification Policies
 
-Two shared notification executables are always defined in the shared core:
+Shared notification behavior is normalized into semantic events:
 
-- `notify-attention.sh`
-- `notify-finished.sh`
+- `attention`
+- `finished`
+- `danger`
 
-This is true even if a given agent does not currently expose both event types.
-An unsupported event simply remains unconnected in that agent's adapter/config.
+These are exposed through shared executables:
 
-`notify.sh` remains the platform-aware notification transport:
+- `agent-signal.sh`
+- `agent-attention.sh`
+- `agent-finished.sh`
+- `agent-danger.sh`
 
-- macOS: `osascript`
-- WSL/Linux: `notify-send` when available
-- fallback: stderr notice
+This is true even if a given agent does not currently expose every event. An
+unsupported event simply remains unconnected in that agent's adapter/config.
+
+`notify.sh` remains the platform-aware signal runtime:
+
+- macOS: prefer `toast+sound` via `osascript`, with `afplay` as sound-only fallback
+- Linux: prefer `toast+sound` via `notify-send`, with `play` as sound fallback
+- WSL: `sound` via `play`
+- fallback: one warning per session to stderr when requested channels are unavailable
 
 ### Sensitive `.env` Policy
 
@@ -222,8 +233,9 @@ The design intentionally distinguishes shared policy from agent capability.
 
 Claude has the strongest current coverage.
 
-- `Notification` -> `notify-attention`
-- `Stop` -> `notify-finished`
+- `Notification` -> `agent-attention`
+- `Stop` -> `agent-finished`
+- `PreToolUse` dangerous Bash deny -> `agent-danger`
 - `PreToolUse` on `Bash|Read|Edit|Write` -> shared preflight policy
 
 Claude can enforce both:
@@ -238,7 +250,8 @@ Codex uses global hooks through `~/.codex/hooks.json` with
 
 Planned mapping:
 
-- `Stop` -> `notify-finished`
+- `Stop` -> `agent-finished`
+- `PreToolUse` dangerous Bash deny -> `agent-danger`
 - `PreToolUse` on `Bash` -> shared preflight policy
 
 Codex currently supports only partial `PreToolUse` interception and currently
