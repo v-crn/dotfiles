@@ -49,11 +49,90 @@ install_codex_hooks_home() {
     chmod +x "$target_home/.codex/hooks/pre-tool-use.sh" "$target_home/.codex/hooks/stop.sh"
 }
 
+extract_table_block() {
+    local table_name="$1"
+    local next_table_name="$2"
+    local file="$3"
+
+    awk -v table="^\\[""$table_name""\\]$" -v next_table="^\\[""$next_table_name""\\]$" '
+        $0 ~ table { in_table = 1 }
+        in_table {
+            if ($0 ~ next_table) {
+                exit
+            }
+            print
+        }
+    ' "$file"
+}
+
 @test "new install: enables codex_hooks feature" {
     sh "$SCRIPT"
 
     run grep -q '^codex_hooks = true$' "$HOME/.codex/config.toml"
     [ "$status" -eq 0 ]
+}
+
+@test "new install: writes curated comments and richer tui status line" {
+    sh "$SCRIPT"
+
+    run grep -q '^# Curated from the official Codex sample config:$' "$HOME/.codex/config.toml"
+    [ "$status" -eq 0 ]
+
+    run grep -q '^# https://developers.openai.com/codex/config-sample$' "$HOME/.codex/config.toml"
+    [ "$status" -eq 0 ]
+
+    run grep -q '^# service_tier = "flex"' "$HOME/.codex/config.toml"
+    [ "$status" -eq 0 ]
+
+    run grep -q '^model_reasoning_effort = "medium"$' "$HOME/.codex/config.toml"
+    [ "$status" -eq 0 ]
+
+    run grep -q '^# model_context_window = 128000       # tokens; default: auto for model$' "$HOME/.codex/config.toml"
+    [ "$status" -eq 0 ]
+
+    run grep -q '^# model_auto_compact_token_limit = 64000  # tokens; unset uses model defaults$' "$HOME/.codex/config.toml"
+    [ "$status" -eq 0 ]
+
+    run grep -q '^# tool_output_token_limit = 12000     # tokens stored per tool output$' "$HOME/.codex/config.toml"
+    [ "$status" -eq 0 ]
+
+    run grep -q '^# background_terminal_max_timeout = 300000$' "$HOME/.codex/config.toml"
+    [ "$status" -eq 0 ]
+
+    run grep -q '^# log_dir = "/absolute/path/to/codex-logs" # directory for Codex logs; default: "\$CODEX_HOME/log"$' "$HOME/.codex/config.toml"
+    [ "$status" -eq 0 ]
+
+    run grep -q '^# sqlite_home = "/absolute/path/to/codex-state" # optional SQLite-backed runtime state directory$' "$HOME/.codex/config.toml"
+    [ "$status" -eq 0 ]
+
+    run grep -q '^# notify = \["notify-send", "Codex"\]$' "$HOME/.codex/config.toml"
+    [ "$status" -eq 0 ]
+
+    run grep -q '^# model = ' "$HOME/.codex/config.toml"
+    [ "$status" -eq 1 ]
+
+    run extract_table_block "tui" "features" "$HOME/.codex/config.toml"
+    [ "$status" -eq 0 ]
+    [ "$output" = "$(cat <<'EOF'
+[tui]
+status_line = [
+    "model-with-reasoning",
+    "git-branch",
+    "context-used",
+    "context-window-size",
+    "used-tokens",
+    "five-hour-limit",
+    "weekly-limit",
+]
+
+# Desktop notifications from the TUI: boolean or filtered list. Default: true
+# Examples: false | ["agent-turn-complete", "approval-requested"]
+notifications = true
+
+# When notifications fire: unfocused (default) | always
+notification_condition = "always"
+EOF
+)" ]
 }
 
 @test "existing config: strips legacy notify key" {
@@ -71,6 +150,231 @@ EOF
 
     run grep -q '^\[projects\.example\]$' "$HOME/.codex/config.toml"
     [ "$status" -eq 0 ]
+}
+
+@test "existing config: preserves user model key" {
+    cat > "$HOME/.codex/config.toml" <<'EOF'
+model = "gpt-legacy"
+
+[projects.example]
+trust_level = "trusted"
+EOF
+
+    sh "$SCRIPT"
+
+    run grep -q '^model = "gpt-legacy"$' "$HOME/.codex/config.toml"
+    [ "$status" -eq 0 ]
+
+    run grep -q '^\[projects\.example\]$' "$HOME/.codex/config.toml"
+    [ "$status" -eq 0 ]
+}
+
+@test "existing config: preserves model while overwriting managed values" {
+    cat > "$HOME/.codex/config.toml" <<'EOF'
+model = "gpt-legacy"
+model_reasoning_effort = "high"
+model_context_window = 99999
+model_auto_compact_token_limit = 55555
+tool_output_token_limit = 7777
+approval_policy = "never"
+sandbox_mode = "danger-full-access"
+personality = "friendly"
+background_terminal_max_timeout = 12345
+log_dir = "/tmp/codex-log"
+sqlite_home = "/tmp/codex-sqlite"
+notify = ["~/.codex/hooks/notify.sh"]
+
+[tui]
+status_line = [
+    "current-dir",
+]
+notifications = false
+notification_condition = "unfocused"
+
+[features]
+memories = false
+codex_hooks = false
+
+[profiles.conservative]
+approval_policy = "never"
+sandbox_mode = "danger-full-access"
+
+[projects.example]
+trust_level = "trusted"
+EOF
+
+    sh "$SCRIPT"
+
+    run grep -q '^model = "gpt-legacy"$' "$HOME/.codex/config.toml"
+    [ "$status" -eq 0 ]
+
+    run grep -q '^model_reasoning_effort = "medium"$' "$HOME/.codex/config.toml"
+    [ "$status" -eq 0 ]
+
+    run grep -q '^personality = "pragmatic"$' "$HOME/.codex/config.toml"
+    [ "$status" -eq 0 ]
+
+    run grep -q '^approval_policy = "on-request"$' "$HOME/.codex/config.toml"
+    [ "$status" -eq 0 ]
+
+    run grep -q '^sandbox_mode = "workspace-write"$' "$HOME/.codex/config.toml"
+    [ "$status" -eq 0 ]
+
+    run grep -q '^background_terminal_max_timeout =' "$HOME/.codex/config.toml"
+    [ "$status" -eq 1 ]
+
+    run grep -q '^model_context_window =' "$HOME/.codex/config.toml"
+    [ "$status" -eq 1 ]
+
+    run grep -q '^model_auto_compact_token_limit =' "$HOME/.codex/config.toml"
+    [ "$status" -eq 1 ]
+
+    run grep -q '^tool_output_token_limit =' "$HOME/.codex/config.toml"
+    [ "$status" -eq 1 ]
+
+    run grep -q '^log_dir =' "$HOME/.codex/config.toml"
+    [ "$status" -eq 1 ]
+
+    run grep -q '^sqlite_home =' "$HOME/.codex/config.toml"
+    [ "$status" -eq 1 ]
+
+    run grep -q '^notify =' "$HOME/.codex/config.toml"
+    [ "$status" -eq 1 ]
+
+    run extract_table_block "tui" "features" "$HOME/.codex/config.toml"
+    [ "$status" -eq 0 ]
+    [ "$output" = "$(cat <<'EOF'
+[tui]
+status_line = [
+    "model-with-reasoning",
+    "git-branch",
+    "context-used",
+    "context-window-size",
+    "used-tokens",
+    "five-hour-limit",
+    "weekly-limit",
+]
+
+# Desktop notifications from the TUI: boolean or filtered list. Default: true
+# Examples: false | ["agent-turn-complete", "approval-requested"]
+notifications = true
+
+# When notifications fire: unfocused (default) | always
+notification_condition = "always"
+EOF
+)" ]
+
+    run grep -q '^codex_hooks = true$' "$HOME/.codex/config.toml"
+    [ "$status" -eq 0 ]
+
+    run grep -q '^memories = true$' "$HOME/.codex/config.toml"
+    [ "$status" -eq 0 ]
+
+    run grep -q '^\[profiles\.conservative\]$' "$HOME/.codex/config.toml"
+    [ "$status" -eq 0 ]
+
+    run grep -q '^\[projects\.example\]$' "$HOME/.codex/config.toml"
+    [ "$status" -eq 0 ]
+
+    run grep -q '^trust_level = "trusted"$' "$HOME/.codex/config.toml"
+    [ "$status" -eq 0 ]
+}
+
+@test "existing config: overwrites whole tui section even with trailing array comment" {
+    cat > "$HOME/.codex/config.toml" <<'EOF'
+[tui]
+status_line = [
+    "current-dir",
+] # user comment
+notifications = false
+notification_condition = "unfocused"
+EOF
+
+    sh "$SCRIPT"
+
+    run extract_table_block "tui" "features" "$HOME/.codex/config.toml"
+    [ "$status" -eq 0 ]
+    [ "$output" = "$(cat <<'EOF'
+[tui]
+status_line = [
+    "model-with-reasoning",
+    "git-branch",
+    "context-used",
+    "context-window-size",
+    "used-tokens",
+    "five-hour-limit",
+    "weekly-limit",
+]
+
+# Desktop notifications from the TUI: boolean or filtered list. Default: true
+# Examples: false | ["agent-turn-complete", "approval-requested"]
+notifications = true
+
+# When notifications fire: unfocused (default) | always
+notification_condition = "always"
+EOF
+)" ]
+}
+
+@test "existing config: overwrites whole tui section after single-line status_line comment" {
+    cat > "$HOME/.codex/config.toml" <<'EOF'
+[tui]
+status_line = ["current-dir"] # user comment
+notifications = false
+notification_condition = "unfocused"
+EOF
+
+    sh "$SCRIPT"
+
+    run extract_table_block "tui" "features" "$HOME/.codex/config.toml"
+    [ "$status" -eq 0 ]
+    [ "$output" = "$(cat <<'EOF'
+[tui]
+status_line = [
+    "model-with-reasoning",
+    "git-branch",
+    "context-used",
+    "context-window-size",
+    "used-tokens",
+    "five-hour-limit",
+    "weekly-limit",
+]
+
+# Desktop notifications from the TUI: boolean or filtered list. Default: true
+# Examples: false | ["agent-turn-complete", "approval-requested"]
+notifications = true
+
+# When notifications fire: unfocused (default) | always
+notification_condition = "always"
+EOF
+)" ]
+}
+
+@test "existing config: merge is idempotent across repeated runs" {
+    cat > "$HOME/.codex/config.toml" <<'EOF'
+model = "gpt-legacy"
+approval_policy = "never"
+sandbox_mode = "danger-full-access"
+notify = ["~/.codex/hooks/notify.sh"]
+
+[tui]
+status_line = [
+    "current-dir",
+] # keep this comment
+notifications = false
+notification_condition = "unfocused"
+
+[projects.example]
+trust_level = "trusted"
+EOF
+
+    sh "$SCRIPT"
+    first_contents="$(cat "$HOME/.codex/config.toml")"
+
+    sh "$SCRIPT"
+    second_contents="$(cat "$HOME/.codex/config.toml")"
+
+    [ "$first_contents" = "$second_contents" ]
 }
 
 @test "hooks.json template renders expected global hooks" {
