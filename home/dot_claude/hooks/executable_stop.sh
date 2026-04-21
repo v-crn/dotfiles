@@ -1,11 +1,9 @@
 #!/bin/bash
-# Stop event hook for Claude Code.
-# Sends a completion notification after responses that took >= 10 seconds.
-# Skips fast responses to avoid noise during short back-and-forth exchanges.
-# shellcheck disable=SC1090,SC1091
-. ~/.agents/hooks/lib/notify.sh
+# Claude Code stop adapter.
+# Keeps Claude-specific timing and loop-guard behavior, then delegates to the shared notifier.
 
 INPUT="$(cat)"
+SHARED_FINISHED="$HOME/.agents/hooks/bin/notify-finished.sh"
 
 # Guard: stop_hook_active=true means we're already in a stop hook loop — exit early
 if [ "$(printf '%s' "$INPUT" | jq -r '.stop_hook_active // false')" = "true" ]; then
@@ -34,7 +32,11 @@ printf '%s\n' "$NOW" > "$MARKER_FILE"
 
 # Notify only if Claude was working for >= 10 seconds
 if [ "$ELAPSED" -ge 10 ]; then
-    send_notification "Claude Code" "Finished"
+    if [ ! -x "$SHARED_FINISHED" ]; then
+        printf 'Blocked: missing shared hook binary: %s\n' "$SHARED_FINISHED" >&2
+        exit 2
+    fi
+    exec "$SHARED_FINISHED" "Claude Code" "Finished"
 fi
 
 exit 0

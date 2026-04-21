@@ -1,9 +1,13 @@
 #!/bin/bash
-# Notification event hook for Claude Code.
-# Fires when Claude needs attention (permission prompt, idle, etc.).
-# shellcheck disable=SC1090,SC1091
-. ~/.agents/hooks/lib/notify.sh
+# Claude Code attention notification adapter.
 
-cat > /dev/null
+cat >/dev/null
 
-send_notification "Claude Code" "Needs your attention"
+SHARED_ATTENTION="$HOME/.agents/hooks/bin/notify-attention.sh"
+
+if [ ! -x "$SHARED_ATTENTION" ]; then
+    printf 'Blocked: missing shared hook binary: %s\n' "$SHARED_ATTENTION" >&2
+    exit 2
+fi
+
+exec "$SHARED_ATTENTION" "Claude Code" "Needs your attention"

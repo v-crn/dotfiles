@@ -1,9 +1,12 @@
 #!/usr/bin/env bats
 # Tests for Claude Code hook scripts
 
-HOOKS_DIR="$HOME/.claude/hooks"
 PLATFORM_SH="$HOME/.agents/hooks/lib/platform.sh"
 REPO_ROOT="$(cd "$BATS_TEST_DIRNAME/.." && pwd)"
+HOOKS_DIR="$REPO_ROOT/home/dot_claude/hooks"
+CLAUDE_PRE_TOOL_USE_SH="$HOOKS_DIR/executable_pre-tool-use.sh"
+CLAUDE_NOTIFICATION_SH="$HOOKS_DIR/executable_notification.sh"
+CLAUDE_STOP_SH="$HOOKS_DIR/executable_stop.sh"
 
 # ---------------------------------------------------------------------------
 # lib/platform.sh
@@ -41,24 +44,30 @@ CHECK_PREFLIGHT_SOURCE_SH="$REPO_ROOT/home/dot_agents/hooks/bin/executable_check
 NOTIFY_ATTENTION_SOURCE_SH="$REPO_ROOT/home/dot_agents/hooks/bin/executable_notify-attention.sh"
 NOTIFY_FINISHED_SOURCE_SH="$REPO_ROOT/home/dot_agents/hooks/bin/executable_notify-finished.sh"
 
+install_shared_hooks_home() {
+    local target_home="$1"
+
+    mkdir -p "$target_home/.agents/hooks/lib" "$target_home/.agents/hooks/bin"
+    cp "$REPO_ROOT/home/dot_agents/hooks/lib/executable_notify.sh" "$target_home/.agents/hooks/lib/notify.sh"
+    cp "$REPO_ROOT/home/dot_agents/hooks/lib/executable_platform.sh" "$target_home/.agents/hooks/lib/platform.sh"
+    cp "$REPO_ROOT/home/dot_agents/hooks/lib/executable_env_policy.sh" "$target_home/.agents/hooks/lib/env_policy.sh"
+    cp "$REPO_ROOT/home/dot_agents/hooks/lib/executable_bash_policy.sh" "$target_home/.agents/hooks/lib/bash_policy.sh"
+    cp "$REPO_ROOT/home/dot_agents/hooks/bin/executable_check-preflight.sh" "$target_home/.agents/hooks/bin/check-preflight.sh"
+    cp "$REPO_ROOT/home/dot_agents/hooks/bin/executable_notify-attention.sh" "$target_home/.agents/hooks/bin/notify-attention.sh"
+    cp "$REPO_ROOT/home/dot_agents/hooks/bin/executable_notify-finished.sh" "$target_home/.agents/hooks/bin/notify-finished.sh"
+    chmod +x \
+        "$target_home/.agents/hooks/lib/notify.sh" \
+        "$target_home/.agents/hooks/lib/platform.sh" \
+        "$target_home/.agents/hooks/lib/env_policy.sh" \
+        "$target_home/.agents/hooks/lib/bash_policy.sh" \
+        "$target_home/.agents/hooks/bin/check-preflight.sh" \
+        "$target_home/.agents/hooks/bin/notify-attention.sh" \
+        "$target_home/.agents/hooks/bin/notify-finished.sh"
+}
+
 setup_shared_hooks_home() {
     SHARED_HOOKS_HOME="$(mktemp -d)"
-    mkdir -p "$SHARED_HOOKS_HOME/.agents/hooks/lib" "$SHARED_HOOKS_HOME/.agents/hooks/bin"
-    cp "$REPO_ROOT/home/dot_agents/hooks/lib/executable_notify.sh" "$SHARED_HOOKS_HOME/.agents/hooks/lib/notify.sh"
-    cp "$REPO_ROOT/home/dot_agents/hooks/lib/executable_platform.sh" "$SHARED_HOOKS_HOME/.agents/hooks/lib/platform.sh"
-    cp "$REPO_ROOT/home/dot_agents/hooks/lib/executable_env_policy.sh" "$SHARED_HOOKS_HOME/.agents/hooks/lib/env_policy.sh"
-    cp "$REPO_ROOT/home/dot_agents/hooks/lib/executable_bash_policy.sh" "$SHARED_HOOKS_HOME/.agents/hooks/lib/bash_policy.sh"
-    cp "$REPO_ROOT/home/dot_agents/hooks/bin/executable_check-preflight.sh" "$SHARED_HOOKS_HOME/.agents/hooks/bin/check-preflight.sh"
-    cp "$REPO_ROOT/home/dot_agents/hooks/bin/executable_notify-attention.sh" "$SHARED_HOOKS_HOME/.agents/hooks/bin/notify-attention.sh"
-    cp "$REPO_ROOT/home/dot_agents/hooks/bin/executable_notify-finished.sh" "$SHARED_HOOKS_HOME/.agents/hooks/bin/notify-finished.sh"
-    chmod +x \
-        "$SHARED_HOOKS_HOME/.agents/hooks/lib/notify.sh" \
-        "$SHARED_HOOKS_HOME/.agents/hooks/lib/platform.sh" \
-        "$SHARED_HOOKS_HOME/.agents/hooks/lib/env_policy.sh" \
-        "$SHARED_HOOKS_HOME/.agents/hooks/lib/bash_policy.sh" \
-        "$SHARED_HOOKS_HOME/.agents/hooks/bin/check-preflight.sh" \
-        "$SHARED_HOOKS_HOME/.agents/hooks/bin/notify-attention.sh" \
-        "$SHARED_HOOKS_HOME/.agents/hooks/bin/notify-finished.sh"
+    install_shared_hooks_home "$SHARED_HOOKS_HOME"
 }
 
 teardown_shared_hooks_home() {
@@ -501,11 +510,18 @@ EOFMOCK
     teardown_shared_hooks_home
 }
 
-PRE_TOOL_USE_SH="$HOOKS_DIR/pre-tool-use.sh"
+PRE_TOOL_USE_SH="$CLAUDE_PRE_TOOL_USE_SH"
 
 # Helper: run hook with JSON input
 run_hook() {
-    printf '%s' "$1" | bash "$PRE_TOOL_USE_SH"
+    local temp_home
+
+    temp_home="$(mktemp -d)"
+    install_shared_hooks_home "$temp_home"
+    printf '%s' "$1" | HOME="$temp_home" "$PRE_TOOL_USE_SH"
+    local status=$?
+    rm -rf "$temp_home"
+    return "$status"
 }
 
 # ---------------------------------------------------------------------------
@@ -528,6 +544,11 @@ run_hook() {
 
 @test "pre-tool-use.sh: blocks Read of .env.local" {
     run run_hook '{"tool_name":"Read","tool_input":{"file_path":"/project/.env.local"}}'
+    [ "$status" -eq 2 ]
+}
+
+@test "pre-tool-use.sh: blocks MultiEdit of .env.local" {
+    run run_hook '{"tool_name":"MultiEdit","tool_input":{"file_path":"/project/.env.local"}}'
     [ "$status" -eq 2 ]
 }
 
@@ -677,8 +698,8 @@ run_hook() {
     [ "$status" -eq 0 ]
 }
 
-NOTIFICATION_SH="$HOOKS_DIR/notification.sh"
-STOP_SH="$HOOKS_DIR/stop.sh"
+NOTIFICATION_SH="$CLAUDE_NOTIFICATION_SH"
+STOP_SH="$CLAUDE_STOP_SH"
 
 # ---------------------------------------------------------------------------
 # notification.sh
@@ -694,16 +715,45 @@ STOP_SH="$HOOKS_DIR/stop.sh"
     CALLS="$MOCK_DIR/calls.log"
     printf '#!/bin/bash\necho "$@" >> "%s"\n' "$CALLS" > "$MOCK_DIR/notify-send"
     chmod +x "$MOCK_DIR/notify-send"
+    setup_shared_hooks_home
 
     run bash -c "
+        export HOME=\"$SHARED_HOOKS_HOME\"
         export PATH=\"$MOCK_DIR:\$PATH\"
         export WSL_DISTRO_NAME=Ubuntu
-        printf '{}' | bash '$NOTIFICATION_SH'
+        printf '{}' | '$NOTIFICATION_SH'
     "
     [ "$status" -eq 0 ]
     [ -f "$CALLS" ]
     grep -q "Claude Code" "$CALLS"
     rm -rf "$MOCK_DIR"
+    teardown_shared_hooks_home
+}
+
+@test "notification.sh: fails closed when shared notifier entrypoint is missing" {
+    EMPTY_HOME="$(mktemp -d)"
+
+    run bash -c "
+        export HOME=\"$EMPTY_HOME\"
+        printf '{}' | '$NOTIFICATION_SH'
+    "
+    [ "$status" -eq 2 ]
+    echo "$output" | grep -q "missing shared hook binary"
+    rm -rf "$EMPTY_HOME"
+}
+
+@test "notification.sh: fails closed when shared notifier entrypoint is not executable" {
+    EMPTY_HOME="$(mktemp -d)"
+    mkdir -p "$EMPTY_HOME/.agents/hooks/bin"
+    printf '#!/bin/bash\nexit 0\n' > "$EMPTY_HOME/.agents/hooks/bin/notify-attention.sh"
+
+    run bash -c "
+        export HOME=\"$EMPTY_HOME\"
+        printf '{}' | '$NOTIFICATION_SH'
+    "
+    [ "$status" -eq 2 ]
+    echo "$output" | grep -q "missing shared hook binary"
+    rm -rf "$EMPTY_HOME"
 }
 
 # ---------------------------------------------------------------------------
@@ -716,8 +766,10 @@ STOP_SH="$HOOKS_DIR/stop.sh"
 }
 
 @test "stop.sh: exits 0 immediately when stop_hook_active is true" {
-    run bash -c "printf '{\"stop_hook_active\":true,\"session_id\":\"test-guard\"}' | bash '$STOP_SH'"
+    setup_shared_hooks_home
+    run bash -c "export HOME=\"$SHARED_HOOKS_HOME\"; printf '{\"stop_hook_active\":true,\"session_id\":\"test-guard\"}' | '$STOP_SH'"
     [ "$status" -eq 0 ]
+    teardown_shared_hooks_home
 }
 
 @test "stop.sh: does not notify on first call (creates marker only)" {
@@ -725,18 +777,21 @@ STOP_SH="$HOOKS_DIR/stop.sh"
     CALLS="$MOCK_DIR/calls.log"
     printf '#!/bin/bash\necho "$@" >> "%s"\n' "$CALLS" > "$MOCK_DIR/notify-send"
     chmod +x "$MOCK_DIR/notify-send"
+    setup_shared_hooks_home
 
     SESSION="test-session-first-$$"
     run bash -c "
+        export HOME=\"$SHARED_HOOKS_HOME\"
         export TMPDIR=\"$MOCK_DIR\"
         export PATH=\"$MOCK_DIR:\$PATH\"
         export WSL_DISTRO_NAME=Ubuntu
-        printf '{\"stop_hook_active\":false,\"session_id\":\"$SESSION\"}' | bash '$STOP_SH'
+        printf '{\"stop_hook_active\":false,\"session_id\":\"$SESSION\"}' | '$STOP_SH'
     "
     [ "$status" -eq 0 ]
     # notify-send should NOT have been called (first call just writes marker)
     [ ! -f "$CALLS" ] || [ ! -s "$CALLS" ]
     rm -rf "$MOCK_DIR"
+    teardown_shared_hooks_home
 }
 
 @test "stop.sh: notifies when elapsed time >= 10 seconds" {
@@ -744,6 +799,7 @@ STOP_SH="$HOOKS_DIR/stop.sh"
     CALLS="$MOCK_DIR/calls.log"
     printf '#!/bin/bash\necho "$@" >> "%s"\n' "$CALLS" > "$MOCK_DIR/notify-send"
     chmod +x "$MOCK_DIR/notify-send"
+    setup_shared_hooks_home
 
     SESSION="test-session-elapsed-$$"
     # Write a marker with a timestamp 15 seconds in the past
@@ -751,14 +807,16 @@ STOP_SH="$HOOKS_DIR/stop.sh"
     printf '%s\n' "$PAST" > "$MOCK_DIR/claude-last-stop-$SESSION"
 
     run bash -c "
+        export HOME=\"$SHARED_HOOKS_HOME\"
         export TMPDIR=\"$MOCK_DIR\"
         export PATH=\"$MOCK_DIR:\$PATH\"
         export WSL_DISTRO_NAME=Ubuntu
-        printf '{\"stop_hook_active\":false,\"session_id\":\"$SESSION\"}' | bash '$STOP_SH'
+        printf '{\"stop_hook_active\":false,\"session_id\":\"$SESSION\"}' | '$STOP_SH'
     "
     [ "$status" -eq 0 ]
     [ -f "$CALLS" ] && [ -s "$CALLS" ]
     rm -rf "$MOCK_DIR"
+    teardown_shared_hooks_home
 }
 
 @test "stop.sh: does not notify when elapsed time < 10 seconds" {
@@ -766,6 +824,7 @@ STOP_SH="$HOOKS_DIR/stop.sh"
     CALLS="$MOCK_DIR/calls.log"
     printf '#!/bin/bash\necho "$@" >> "%s"\n' "$CALLS" > "$MOCK_DIR/notify-send"
     chmod +x "$MOCK_DIR/notify-send"
+    setup_shared_hooks_home
 
     SESSION="test-session-fast-$$"
     # Write a marker just 2 seconds ago
@@ -773,12 +832,14 @@ STOP_SH="$HOOKS_DIR/stop.sh"
     printf '%s\n' "$RECENT" > "$MOCK_DIR/claude-last-stop-$SESSION"
 
     run bash -c "
+        export HOME=\"$SHARED_HOOKS_HOME\"
         export TMPDIR=\"$MOCK_DIR\"
         export PATH=\"$MOCK_DIR:\$PATH\"
         export WSL_DISTRO_NAME=Ubuntu
-        printf '{\"stop_hook_active\":false,\"session_id\":\"$SESSION\"}' | bash '$STOP_SH'
+        printf '{\"stop_hook_active\":false,\"session_id\":\"$SESSION\"}' | '$STOP_SH'
     "
     [ "$status" -eq 0 ]
     [ ! -f "$CALLS" ] || [ ! -s "$CALLS" ]
     rm -rf "$MOCK_DIR"
+    teardown_shared_hooks_home
 }
