@@ -171,6 +171,28 @@ Examples:
 
 Dangerous Bash detection is also centralized.
 
+This policy is intentionally a guardrail for common interactive agent commands,
+not a full shell parser or a complete security boundary. It should reliably
+cover direct commands and common wrapper forms used by coding agents, while
+avoiding obvious false positives on harmless text output.
+
+In scope for blocking:
+
+- direct command forms such as `rm -rf /`, `cat .env`, `psql -c "DROP TABLE"`
+- common wrapper forms such as `sudo ...`, `env ...`, `command ...`,
+  `bash -lc ...`, `sh -c ...`, `zsh -c ...`, `dash -c ...`
+- common direct readers such as `cat`, `less`, `more`, `head`, `tail`, `grep`,
+  `source`, `.`, and `sed`
+- obvious SQL-client execution paths such as `psql -c ...` and
+  `echo ... | psql`
+
+Out of scope:
+
+- arbitrary multi-step shell scripts
+- exhaustive shell grammar coverage
+- perfect detection of every quoting, expansion, separator, or heredoc form
+- treating the hook as a substitute for sandboxing or permissions
+
 Blocked patterns:
 
 - `rm -rf /`
@@ -187,6 +209,10 @@ Warn-only patterns:
 - `curl | bash`
 - `curl | sh`
 - `wget | sh`
+
+The implementation should prefer stable behavior on typical agent-generated
+commands over adversarial completeness. When there is a trade-off, avoid
+turning this shared guardrail into a brittle mini shell interpreter.
 
 ## Agent Capability Mapping
 
@@ -283,10 +309,14 @@ shape differs by tool.
 
 - Agent hook support differs and may evolve independently
 - Codex hook support is still experimental
-- Bash interception is a guardrail, not a complete enforcement boundary
+- Bash interception is a guardrail for common cases, not a complete enforcement
+  boundary
 - Unsupported hook fields must fail safely and stay localized to adapters
 - Duplicate completion notifications are possible if old and new Codex notify
   mechanisms are both enabled
+- The shared Bash policy intentionally stops short of full shell parsing;
+  residual bypasses for complex multi-step commands are acceptable within this
+  design
 
 ## Implementation Direction
 
