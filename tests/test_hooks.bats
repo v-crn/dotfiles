@@ -3,6 +3,7 @@
 
 HOOKS_DIR="$HOME/.claude/hooks"
 PLATFORM_SH="$HOME/.agents/hooks/lib/platform.sh"
+REPO_ROOT="$(cd "$BATS_TEST_DIRNAME/.." && pwd)"
 
 # ---------------------------------------------------------------------------
 # lib/platform.sh
@@ -34,6 +35,58 @@ PLATFORM_SH="$HOME/.agents/hooks/lib/platform.sh"
 }
 
 NOTIFY_SH="$HOME/.agents/hooks/lib/notify.sh"
+ENV_POLICY_SH="$REPO_ROOT/home/dot_agents/hooks/lib/executable_env_policy.sh"
+BASH_POLICY_SH="$REPO_ROOT/home/dot_agents/hooks/lib/executable_bash_policy.sh"
+CHECK_PREFLIGHT_SOURCE_SH="$REPO_ROOT/home/dot_agents/hooks/bin/executable_check-preflight.sh"
+NOTIFY_ATTENTION_SOURCE_SH="$REPO_ROOT/home/dot_agents/hooks/bin/executable_notify-attention.sh"
+NOTIFY_FINISHED_SOURCE_SH="$REPO_ROOT/home/dot_agents/hooks/bin/executable_notify-finished.sh"
+
+setup_shared_hooks_home() {
+    SHARED_HOOKS_HOME="$(mktemp -d)"
+    mkdir -p "$SHARED_HOOKS_HOME/.agents/hooks/lib" "$SHARED_HOOKS_HOME/.agents/hooks/bin"
+    cp "$REPO_ROOT/home/dot_agents/hooks/lib/executable_notify.sh" "$SHARED_HOOKS_HOME/.agents/hooks/lib/notify.sh"
+    cp "$REPO_ROOT/home/dot_agents/hooks/lib/executable_platform.sh" "$SHARED_HOOKS_HOME/.agents/hooks/lib/platform.sh"
+    cp "$REPO_ROOT/home/dot_agents/hooks/lib/executable_env_policy.sh" "$SHARED_HOOKS_HOME/.agents/hooks/lib/env_policy.sh"
+    cp "$REPO_ROOT/home/dot_agents/hooks/lib/executable_bash_policy.sh" "$SHARED_HOOKS_HOME/.agents/hooks/lib/bash_policy.sh"
+    cp "$REPO_ROOT/home/dot_agents/hooks/bin/executable_check-preflight.sh" "$SHARED_HOOKS_HOME/.agents/hooks/bin/check-preflight.sh"
+    cp "$REPO_ROOT/home/dot_agents/hooks/bin/executable_notify-attention.sh" "$SHARED_HOOKS_HOME/.agents/hooks/bin/notify-attention.sh"
+    cp "$REPO_ROOT/home/dot_agents/hooks/bin/executable_notify-finished.sh" "$SHARED_HOOKS_HOME/.agents/hooks/bin/notify-finished.sh"
+    chmod +x \
+        "$SHARED_HOOKS_HOME/.agents/hooks/lib/notify.sh" \
+        "$SHARED_HOOKS_HOME/.agents/hooks/lib/platform.sh" \
+        "$SHARED_HOOKS_HOME/.agents/hooks/lib/env_policy.sh" \
+        "$SHARED_HOOKS_HOME/.agents/hooks/lib/bash_policy.sh" \
+        "$SHARED_HOOKS_HOME/.agents/hooks/bin/check-preflight.sh" \
+        "$SHARED_HOOKS_HOME/.agents/hooks/bin/notify-attention.sh" \
+        "$SHARED_HOOKS_HOME/.agents/hooks/bin/notify-finished.sh"
+}
+
+teardown_shared_hooks_home() {
+    rm -rf "$SHARED_HOOKS_HOME"
+}
+
+setup_bash_policy_home() {
+    BASH_POLICY_HOME="$(mktemp -d)"
+    mkdir -p "$BASH_POLICY_HOME/.agents/hooks/lib"
+    cp "$REPO_ROOT/home/dot_agents/hooks/lib/executable_bash_policy.sh" "$BASH_POLICY_HOME/.agents/hooks/lib/bash_policy.sh"
+    cp "$REPO_ROOT/home/dot_agents/hooks/lib/executable_bash_policy.sh" "$BASH_POLICY_HOME/.agents/hooks/lib/executable_bash_policy.sh"
+    chmod +x \
+        "$BASH_POLICY_HOME/.agents/hooks/lib/bash_policy.sh" \
+        "$BASH_POLICY_HOME/.agents/hooks/lib/executable_bash_policy.sh"
+}
+
+setup_bash_policy_home_with_env() {
+    setup_bash_policy_home
+    cp "$REPO_ROOT/home/dot_agents/hooks/lib/executable_env_policy.sh" "$BASH_POLICY_HOME/.agents/hooks/lib/env_policy.sh"
+    cp "$REPO_ROOT/home/dot_agents/hooks/lib/executable_env_policy.sh" "$BASH_POLICY_HOME/.agents/hooks/lib/executable_env_policy.sh"
+    chmod +x \
+        "$BASH_POLICY_HOME/.agents/hooks/lib/env_policy.sh" \
+        "$BASH_POLICY_HOME/.agents/hooks/lib/executable_env_policy.sh"
+}
+
+teardown_bash_policy_home() {
+    rm -rf "$BASH_POLICY_HOME"
+}
 
 # ---------------------------------------------------------------------------
 # lib/notify.sh
@@ -96,6 +149,356 @@ EOFMOCK
     [ "$status" -eq 0 ]
     echo "$output" | grep -q "\[NOTICE\]"
     rm -rf "$EMPTY_DIR"
+}
+
+# ---------------------------------------------------------------------------
+# shared hook core
+# ---------------------------------------------------------------------------
+
+@test "env_policy.sh: blocks .env.local" {
+    run bash -c ". '$ENV_POLICY_SH'; is_sensitive_env_file '.env.local'"
+    [ "$status" -eq 0 ]
+}
+
+@test "env_policy.sh: allows .env.example" {
+    run bash -c ". '$ENV_POLICY_SH'; is_sensitive_env_file '.env.example'"
+    [ "$status" -eq 1 ]
+}
+
+@test "bash_policy.sh: fails closed when env_policy is missing" {
+    setup_bash_policy_home
+    run env HOME="$BASH_POLICY_HOME" bash -c ". \"$BASH_POLICY_HOME/.agents/hooks/lib/bash_policy.sh\"; check_dangerous_bash_command 'sudo cat /project/.env'"
+    teardown_bash_policy_home
+    [ "$status" -eq 2 ]
+}
+
+@test "bash_policy.sh: blocks path-qualified rm" {
+    setup_bash_policy_home_with_env
+    run env HOME="$BASH_POLICY_HOME" bash -c ". \"$BASH_POLICY_HOME/.agents/hooks/lib/bash_policy.sh\"; check_dangerous_bash_command '/bin/rm -rf -- /'"
+    teardown_bash_policy_home
+    [ "$status" -eq 2 ]
+}
+
+@test "bash_policy.sh: blocks path-qualified cat of sensitive env file" {
+    setup_bash_policy_home_with_env
+    run env HOME="$BASH_POLICY_HOME" bash -c ". \"$BASH_POLICY_HOME/.agents/hooks/lib/bash_policy.sh\"; check_dangerous_bash_command 'sudo /bin/cat /project/.env'"
+    teardown_bash_policy_home
+    [ "$status" -eq 2 ]
+}
+
+@test "bash_policy.sh: blocks bash -lc rm -rf /" {
+    setup_bash_policy_home_with_env
+    run env HOME="$BASH_POLICY_HOME" bash -c ". \"$BASH_POLICY_HOME/.agents/hooks/lib/bash_policy.sh\"; check_dangerous_bash_command 'bash -lc \"rm -rf /\"'"
+    teardown_bash_policy_home
+    [ "$status" -eq 2 ]
+}
+
+@test "bash_policy.sh: blocks bash -lc cat /project/.env" {
+    setup_bash_policy_home_with_env
+    run env HOME="$BASH_POLICY_HOME" bash -c ". \"$BASH_POLICY_HOME/.agents/hooks/lib/bash_policy.sh\"; check_dangerous_bash_command 'bash -lc \"cat /project/.env\"'"
+    teardown_bash_policy_home
+    [ "$status" -eq 2 ]
+}
+
+@test "bash_policy.sh: blocks zsh -c rm -rf /" {
+    setup_bash_policy_home_with_env
+    run env HOME="$BASH_POLICY_HOME" bash -c ". \"$BASH_POLICY_HOME/.agents/hooks/lib/bash_policy.sh\"; check_dangerous_bash_command 'zsh -c \"rm -rf /\"'"
+    teardown_bash_policy_home
+    [ "$status" -eq 2 ]
+}
+
+@test "bash_policy.sh: blocks dash -c cat /project/.env" {
+    setup_bash_policy_home_with_env
+    run env HOME="$BASH_POLICY_HOME" bash -c ". \"$BASH_POLICY_HOME/.agents/hooks/lib/bash_policy.sh\"; check_dangerous_bash_command 'dash -c \"cat /project/.env\"'"
+    teardown_bash_policy_home
+    [ "$status" -eq 2 ]
+}
+
+@test "bash_policy.sh: blocks env -S rm -rf /" {
+    setup_bash_policy_home_with_env
+    run env HOME="$BASH_POLICY_HOME" bash -c ". \"$BASH_POLICY_HOME/.agents/hooks/lib/bash_policy.sh\"; check_dangerous_bash_command 'env -S \"rm -rf /\"'"
+    teardown_bash_policy_home
+    [ "$status" -eq 2 ]
+}
+
+@test "bash_policy.sh: blocks sh -c psql DROP DATABASE" {
+    setup_bash_policy_home_with_env
+    run env HOME="$BASH_POLICY_HOME" bash -c ". \"$BASH_POLICY_HOME/.agents/hooks/lib/bash_policy.sh\"; check_dangerous_bash_command 'sh -c \"psql -c DROP DATABASE db;\"'"
+    teardown_bash_policy_home
+    [ "$status" -eq 2 ]
+}
+
+@test "bash_policy.sh: blocks sudo -u root rm -rf /" {
+    setup_bash_policy_home_with_env
+    run env HOME="$BASH_POLICY_HOME" bash -c ". \"$BASH_POLICY_HOME/.agents/hooks/lib/bash_policy.sh\"; check_dangerous_bash_command 'sudo -u root rm -rf /'"
+    teardown_bash_policy_home
+    [ "$status" -eq 2 ]
+}
+
+@test "bash_policy.sh: blocks sudo -u root cat /project/.env" {
+    setup_bash_policy_home_with_env
+    run env HOME="$BASH_POLICY_HOME" bash -c ". \"$BASH_POLICY_HOME/.agents/hooks/lib/bash_policy.sh\"; check_dangerous_bash_command 'sudo -u root cat /project/.env'"
+    teardown_bash_policy_home
+    [ "$status" -eq 2 ]
+}
+
+@test "bash_policy.sh: blocks env FOO=1 rm -rf /" {
+    setup_bash_policy_home_with_env
+    run env HOME="$BASH_POLICY_HOME" bash -c ". \"$BASH_POLICY_HOME/.agents/hooks/lib/bash_policy.sh\"; check_dangerous_bash_command 'env FOO=1 rm -rf /'"
+    teardown_bash_policy_home
+    [ "$status" -eq 2 ]
+}
+
+@test "bash_policy.sh: blocks env -i rm -rf /" {
+    setup_bash_policy_home_with_env
+    run env HOME="$BASH_POLICY_HOME" bash -c ". \"$BASH_POLICY_HOME/.agents/hooks/lib/bash_policy.sh\"; check_dangerous_bash_command 'env -i rm -rf /'"
+    teardown_bash_policy_home
+    [ "$status" -eq 2 ]
+}
+
+@test "bash_policy.sh: blocks /usr/bin/env FOO=1 rm -rf /" {
+    setup_bash_policy_home_with_env
+    run env HOME="$BASH_POLICY_HOME" bash -c ". \"$BASH_POLICY_HOME/.agents/hooks/lib/bash_policy.sh\"; check_dangerous_bash_command '/usr/bin/env FOO=1 rm -rf /'"
+    teardown_bash_policy_home
+    [ "$status" -eq 2 ]
+}
+
+@test "bash_policy.sh: blocks command rm -rf /" {
+    setup_bash_policy_home_with_env
+    run env HOME="$BASH_POLICY_HOME" bash -c ". \"$BASH_POLICY_HOME/.agents/hooks/lib/bash_policy.sh\"; check_dangerous_bash_command 'command rm -rf /'"
+    teardown_bash_policy_home
+    [ "$status" -eq 2 ]
+}
+
+@test "bash_policy.sh: blocks sudo env FOO=1 cat /project/.env" {
+    setup_bash_policy_home_with_env
+    run env HOME="$BASH_POLICY_HOME" bash -c ". \"$BASH_POLICY_HOME/.agents/hooks/lib/bash_policy.sh\"; check_dangerous_bash_command 'sudo env FOO=1 cat /project/.env'"
+    teardown_bash_policy_home
+    [ "$status" -eq 2 ]
+}
+
+@test "bash_policy.sh: blocks cat ./.env" {
+    setup_bash_policy_home_with_env
+    run env HOME="$BASH_POLICY_HOME" bash -c ". \"$BASH_POLICY_HOME/.agents/hooks/lib/bash_policy.sh\"; check_dangerous_bash_command 'cat ./.env'"
+    teardown_bash_policy_home
+    [ "$status" -eq 2 ]
+}
+
+@test "bash_policy.sh: blocks cat \"./.env\"" {
+    setup_bash_policy_home_with_env
+    run env HOME="$BASH_POLICY_HOME" bash -c ". \"$BASH_POLICY_HOME/.agents/hooks/lib/bash_policy.sh\"; check_dangerous_bash_command 'cat \"./.env\"'"
+    teardown_bash_policy_home
+    [ "$status" -eq 2 ]
+}
+
+@test "bash_policy.sh: blocks source ./secrets/.env.prod" {
+    setup_bash_policy_home_with_env
+    run env HOME="$BASH_POLICY_HOME" bash -c ". \"$BASH_POLICY_HOME/.agents/hooks/lib/bash_policy.sh\"; check_dangerous_bash_command 'source ./secrets/.env.prod'"
+    teardown_bash_policy_home
+    [ "$status" -eq 2 ]
+}
+
+@test "bash_policy.sh: blocks sed -n 1p /project/.env" {
+    setup_bash_policy_home_with_env
+    run env HOME="$BASH_POLICY_HOME" bash -c ". \"$BASH_POLICY_HOME/.agents/hooks/lib/bash_policy.sh\"; check_dangerous_bash_command 'sed -n 1p /project/.env'"
+    teardown_bash_policy_home
+    [ "$status" -eq 2 ]
+}
+
+@test "bash_policy.sh: blocks rm -rf /; true" {
+    setup_bash_policy_home_with_env
+    run env HOME="$BASH_POLICY_HOME" bash -c ". \"$BASH_POLICY_HOME/.agents/hooks/lib/bash_policy.sh\"; check_dangerous_bash_command 'rm -rf /; true'"
+    teardown_bash_policy_home
+    [ "$status" -eq 2 ]
+}
+
+@test "bash_policy.sh: blocks rm -rf ~/" {
+    setup_bash_policy_home_with_env
+    run env HOME="$BASH_POLICY_HOME" bash -c ". \"$BASH_POLICY_HOME/.agents/hooks/lib/bash_policy.sh\"; check_dangerous_bash_command 'rm -rf ~/'"
+    teardown_bash_policy_home
+    [ "$status" -eq 2 ]
+}
+
+@test "bash_policy.sh: blocks rm -rf ./" {
+    setup_bash_policy_home_with_env
+    run env HOME="$BASH_POLICY_HOME" bash -c ". \"$BASH_POLICY_HOME/.agents/hooks/lib/bash_policy.sh\"; check_dangerous_bash_command 'rm -rf ./'"
+    teardown_bash_policy_home
+    [ "$status" -eq 2 ]
+}
+
+@test "bash_policy.sh: blocks rm -rf \"$HOME\"" {
+    setup_bash_policy_home_with_env
+    run env HOME="$BASH_POLICY_HOME" bash -c ". \"$BASH_POLICY_HOME/.agents/hooks/lib/bash_policy.sh\"; check_dangerous_bash_command 'rm -rf \"\$HOME\"'"
+    teardown_bash_policy_home
+    [ "$status" -eq 2 ]
+}
+
+@test "bash_policy.sh: blocks cat /project/.env; true" {
+    setup_bash_policy_home_with_env
+    run env HOME="$BASH_POLICY_HOME" bash -c ". \"$BASH_POLICY_HOME/.agents/hooks/lib/bash_policy.sh\"; check_dangerous_bash_command 'cat /project/.env; true'"
+    teardown_bash_policy_home
+    [ "$status" -eq 2 ]
+}
+
+@test "bash_policy.sh: allows echo rm -rf / as plain text" {
+    setup_bash_policy_home_with_env
+    run env HOME="$BASH_POLICY_HOME" bash -c ". \"$BASH_POLICY_HOME/.agents/hooks/lib/bash_policy.sh\"; check_dangerous_bash_command 'echo rm -rf /'"
+    teardown_bash_policy_home
+    [ "$status" -eq 0 ]
+}
+
+@test "bash_policy.sh: allows rm -rf ./tmp" {
+    setup_bash_policy_home_with_env
+    run env HOME="$BASH_POLICY_HOME" bash -c ". \"$BASH_POLICY_HOME/.agents/hooks/lib/bash_policy.sh\"; check_dangerous_bash_command 'rm -rf ./tmp'"
+    teardown_bash_policy_home
+    [ "$status" -eq 0 ]
+}
+
+@test "bash_policy.sh: allows cat config.env" {
+    setup_bash_policy_home_with_env
+    run env HOME="$BASH_POLICY_HOME" bash -c ". \"$BASH_POLICY_HOME/.agents/hooks/lib/bash_policy.sh\"; check_dangerous_bash_command 'cat config.env'"
+    teardown_bash_policy_home
+    [ "$status" -eq 0 ]
+}
+
+@test "bash_policy.sh: blocks rm -rf ./*" {
+    setup_bash_policy_home_with_env
+    run env HOME="$BASH_POLICY_HOME" bash -c ". \"$BASH_POLICY_HOME/.agents/hooks/lib/bash_policy.sh\"; check_dangerous_bash_command 'rm -rf ./*'"
+    teardown_bash_policy_home
+    [ "$status" -eq 2 ]
+}
+
+@test "bash_policy.sh: blocks rm -rf -- \"/\"" {
+    setup_bash_policy_home_with_env
+    run env HOME="$BASH_POLICY_HOME" bash -c ". \"$BASH_POLICY_HOME/.agents/hooks/lib/bash_policy.sh\"; check_dangerous_bash_command 'rm -rf -- \"/\"'"
+    teardown_bash_policy_home
+    [ "$status" -eq 2 ]
+}
+
+@test "bash_policy.sh: blocks DROP DATABASE" {
+    setup_bash_policy_home_with_env
+    run env HOME="$BASH_POLICY_HOME" bash -c ". \"$BASH_POLICY_HOME/.agents/hooks/lib/bash_policy.sh\"; check_dangerous_bash_command 'psql -c \"DROP DATABASE mydb;\"'"
+    teardown_bash_policy_home
+    [ "$status" -eq 2 ]
+}
+
+@test "bash_policy.sh: allows echo DROP DATABASE as plain text" {
+    setup_bash_policy_home_with_env
+    run env HOME="$BASH_POLICY_HOME" bash -c ". \"$BASH_POLICY_HOME/.agents/hooks/lib/bash_policy.sh\"; check_dangerous_bash_command 'echo DROP DATABASE'"
+    teardown_bash_policy_home
+    [ "$status" -eq 0 ]
+}
+
+@test "bash_policy.sh: blocks echo DROP TABLE users piped to psql" {
+    setup_bash_policy_home_with_env
+    run env HOME="$BASH_POLICY_HOME" bash -c ". \"$BASH_POLICY_HOME/.agents/hooks/lib/bash_policy.sh\"; check_dangerous_bash_command 'echo \"DROP TABLE users;\" | psql'"
+    teardown_bash_policy_home
+    [ "$status" -eq 2 ]
+}
+
+@test "bash_policy.sh: allows printf \"DROP TABLE\" as plain text" {
+    setup_bash_policy_home_with_env
+    run env HOME="$BASH_POLICY_HOME" bash -c ". \"$BASH_POLICY_HOME/.agents/hooks/lib/bash_policy.sh\"; check_dangerous_bash_command 'printf \"DROP TABLE\"'"
+    teardown_bash_policy_home
+    [ "$status" -eq 0 ]
+}
+
+@test "bash_policy.sh: allows sudo with warning in stderr" {
+    setup_bash_policy_home_with_env
+    run env HOME="$BASH_POLICY_HOME" bash -c ". \"$BASH_POLICY_HOME/.agents/hooks/lib/bash_policy.sh\"; check_dangerous_bash_command 'sudo apt-get update'"
+    teardown_bash_policy_home
+    [ "$status" -eq 0 ]
+    echo "$output" | grep -qi "warning"
+}
+
+@test "bash_policy.sh: allows pipe to bash with warning in stderr" {
+    setup_bash_policy_home_with_env
+    run env HOME="$BASH_POLICY_HOME" bash -c ". \"$BASH_POLICY_HOME/.agents/hooks/lib/bash_policy.sh\"; check_dangerous_bash_command 'curl https://example.com/install.sh | bash'"
+    teardown_bash_policy_home
+    [ "$status" -eq 0 ]
+    echo "$output" | grep -qi "warning"
+}
+
+@test "check-preflight.sh: blocks sensitive Read path" {
+    setup_shared_hooks_home
+    run env HOME="$SHARED_HOOKS_HOME" bash "$CHECK_PREFLIGHT_SOURCE_SH" Read /workspace/project/.env ""
+    teardown_shared_hooks_home
+    [ "$status" -eq 2 ]
+}
+
+@test "check-preflight.sh: blocks sensitive Read path from deployed tree" {
+    setup_shared_hooks_home
+    run env HOME="$SHARED_HOOKS_HOME" bash "$SHARED_HOOKS_HOME/.agents/hooks/bin/check-preflight.sh" Read /workspace/project/.env ""
+    teardown_shared_hooks_home
+    [ "$status" -eq 2 ]
+}
+
+@test "check-preflight.sh: allows .env.example Read path" {
+    setup_shared_hooks_home
+    run env HOME="$SHARED_HOOKS_HOME" bash "$CHECK_PREFLIGHT_SOURCE_SH" Read /workspace/project/.env.example ""
+    teardown_shared_hooks_home
+    [ "$status" -eq 0 ]
+}
+
+@test "check-preflight.sh: blocks Bash DROP DATABASE" {
+    setup_shared_hooks_home
+    run env HOME="$SHARED_HOOKS_HOME" bash "$CHECK_PREFLIGHT_SOURCE_SH" Bash "" 'psql -c "DROP DATABASE mydb;"'
+    teardown_shared_hooks_home
+    [ "$status" -eq 2 ]
+}
+
+@test "check-preflight.sh: blocks Bash sudo cat of sensitive env file" {
+    setup_shared_hooks_home
+    run env HOME="$SHARED_HOOKS_HOME" bash "$CHECK_PREFLIGHT_SOURCE_SH" Bash "" 'sudo cat /project/.env'
+    teardown_shared_hooks_home
+    [ "$status" -eq 2 ]
+}
+
+@test "check-preflight.sh: blocks Bash rm -rf -- /" {
+    setup_shared_hooks_home
+    run env HOME="$SHARED_HOOKS_HOME" bash "$CHECK_PREFLIGHT_SOURCE_SH" Bash "" 'rm -rf -- /'
+    teardown_shared_hooks_home
+    [ "$status" -eq 2 ]
+}
+
+@test "notify-attention.sh: exists and is executable" {
+    [ -x "$NOTIFY_ATTENTION_SOURCE_SH" ]
+}
+
+@test "notify-attention.sh: delegates to notify.sh" {
+    setup_shared_hooks_home
+    MOCK_DIR="$(mktemp -d)"
+    CALLS="$MOCK_DIR/calls.log"
+    printf '#!/bin/bash\necho \"$@\" >> \"%s\"\n' "$CALLS" > "$MOCK_DIR/notify-send"
+    chmod +x "$MOCK_DIR/notify-send"
+
+    run env HOME="$SHARED_HOOKS_HOME" PATH="$MOCK_DIR:$PATH" WSL_DISTRO_NAME=Ubuntu bash "$NOTIFY_ATTENTION_SOURCE_SH"
+    [ "$status" -eq 0 ]
+    [ -f "$CALLS" ]
+    grep -q "Agent" "$CALLS"
+    grep -q "Needs your attention" "$CALLS"
+    rm -rf "$MOCK_DIR"
+    teardown_shared_hooks_home
+}
+
+@test "notify-finished.sh: exists and is executable" {
+    [ -x "$NOTIFY_FINISHED_SOURCE_SH" ]
+}
+
+@test "notify-finished.sh: delegates to notify.sh" {
+    setup_shared_hooks_home
+    MOCK_DIR="$(mktemp -d)"
+    CALLS="$MOCK_DIR/calls.log"
+    printf '#!/bin/bash\necho \"$@\" >> \"%s\"\n' "$CALLS" > "$MOCK_DIR/notify-send"
+    chmod +x "$MOCK_DIR/notify-send"
+
+    run env HOME="$SHARED_HOOKS_HOME" PATH="$MOCK_DIR:$PATH" WSL_DISTRO_NAME=Ubuntu bash "$NOTIFY_FINISHED_SOURCE_SH"
+    [ "$status" -eq 0 ]
+    [ -f "$CALLS" ]
+    grep -q "Agent" "$CALLS"
+    grep -q "Finished" "$CALLS"
+    rm -rf "$MOCK_DIR"
+    teardown_shared_hooks_home
 }
 
 PRE_TOOL_USE_SH="$HOOKS_DIR/pre-tool-use.sh"
