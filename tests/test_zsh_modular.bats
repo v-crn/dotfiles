@@ -91,6 +91,10 @@ setup() {
     grep -q 'command -v mise' "$ZSH_CONFIG_DIR/mise.zsh"
 }
 
+@test "mise.zsh uses shims activation" {
+    grep -q 'mise activate zsh --shims' "$ZSH_CONFIG_DIR/mise.zsh"
+}
+
 # ---------------------------------------------------------------------------
 # Modular files — 50_sheldon.zsh
 # ---------------------------------------------------------------------------
