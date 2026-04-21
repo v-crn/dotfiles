@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-Read @README.md
+Read README.md
 
 ## chezmoi Conventions
 
@@ -19,8 +19,11 @@ Read `docs/tools/chezmoi.md` if you need further details about chezmoi.
 ## Documentation Policy
 
 - Documents under `docs/` are preferably written in Japanese
-- Implementation plans go in `docs/plan/` as Markdown files (`YYYY-MM-DD-<topic>.md`)
-- Specifications go in `docs/spec/` as Markdown files
+- Development documents are centralized under `docs/dev/`
+- Implementation plans go in `docs/dev/plans/` as Markdown files (`YYYY-MM-DD-<topic>.md`)
+- Specifications go in `docs/dev/specs/` as Markdown files
+- Even if a skill, agent, template, or tool suggests a different default location, follow this repository policy and place development documents under `docs/dev/`
+- Other development documents should also be placed under `docs/dev/` in an appropriate subdirectory when needed
 
 ## Development Guidelines
 
