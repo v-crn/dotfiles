@@ -54,7 +54,7 @@ extract_table_block() {
     local next_table_name="$2"
     local file="$3"
 
-    awk -v table="^\\[""$table_name""\\]$" -v next_table="^\\[""$next_table_name""\\]$" '
+    awk -v table="^[[]""$table_name""[]]$" -v next_table="^[[]""$next_table_name""[]]$" '
         $0 ~ table { in_table = 1 }
         in_table {
             if ($0 ~ next_table) {

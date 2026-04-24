@@ -124,7 +124,7 @@ TMP=$(mktemp "${TARGET}.tmp.XXXXXX")
 TMP2=$(mktemp "${TARGET}.tmp2.XXXXXX")
 if ! awk \
     -v keys="^(${MANAGED_KEYS})[[:space:]]*=" \
-    -v sects="^\\[(${MANAGED_SECTS})(\\.|\\])" \
+    -v sects="^[[](${MANAGED_SECTS})([.]|[]])" \
     '
     $0 == "# Curated from the official Codex sample config:" {
         in_managed_preamble = 1
