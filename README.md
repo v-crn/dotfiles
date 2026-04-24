@@ -11,6 +11,7 @@
 ### Required
 
 - [chezmoi](https://github.com/twpayne/chezmoi)
+- [jqlang/jq: Command-line JSON processor](https://github.com/jqlang/jq)
 
 ### Preferred
 
