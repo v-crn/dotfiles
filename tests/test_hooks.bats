@@ -1208,76 +1208,35 @@ EOF
     teardown_shared_hooks_home
 }
 
-@test "stop.sh: does not notify on first call (creates marker only)" {
-    MOCK_DIR="$(mktemp -d)"
-    CALLS="$MOCK_DIR/calls.log"
-    printf '#!/bin/bash\necho "$@" >> "%s"\n' "$CALLS" > "$MOCK_DIR/notify-send"
-    chmod +x "$MOCK_DIR/notify-send"
-    setup_shared_hooks_home
-
-    SESSION="test-session-first-$$"
-    run bash -c "
-        export HOME=\"$SHARED_HOOKS_HOME\"
-        export TMPDIR=\"$MOCK_DIR\"
-        export PATH=\"$MOCK_DIR:\$PATH\"
-        export WSL_DISTRO_NAME=Ubuntu
-        printf '{\"stop_hook_active\":false,\"session_id\":\"$SESSION\"}' | '$STOP_SH'
-    "
-    [ "$status" -eq 0 ]
-    # notify-send should NOT have been called (first call just writes marker)
-    [ ! -f "$CALLS" ] || [ ! -s "$CALLS" ]
-    rm -rf "$MOCK_DIR"
-    teardown_shared_hooks_home
-}
-
-@test "stop.sh: notifies when elapsed time >= 10 seconds" {
+@test "stop.sh: notifies on every stop" {
     setup_shared_hooks_home
     CALLS="$(mktemp)"
-    MARKER_DIR="$(mktemp -d)"
     cat > "$SHARED_HOOKS_HOME/.agents/hooks/bin/agent-finished.sh" <<EOF
 #!/bin/bash
 printf '%s\n' "\$@" >> "$CALLS"
 EOF
     chmod +x "$SHARED_HOOKS_HOME/.agents/hooks/bin/agent-finished.sh"
 
-    SESSION="test-session-elapsed-$$"
-    # Write a marker with a timestamp 15 seconds in the past
-    PAST=$(( $(date +%s) - 15 ))
-    printf '%s\n' "$PAST" > "$MARKER_DIR/claude-last-stop-$SESSION"
-
+    SESSION="test-session-notify-$$"
     run bash -c "
         export HOME=\"$SHARED_HOOKS_HOME\"
-        export TMPDIR=\"$MARKER_DIR\"
         printf '{\"stop_hook_active\":false,\"session_id\":\"$SESSION\"}' | '$STOP_SH'
     "
     [ "$status" -eq 0 ]
     [ "$(cat "$CALLS")" = $'Claude Code\nFinished' ]
     rm -f "$CALLS"
-    rm -rf "$MARKER_DIR"
     teardown_shared_hooks_home
 }
 
-@test "stop.sh: does not notify when elapsed time < 10 seconds" {
-    MOCK_DIR="$(mktemp -d)"
-    CALLS="$MOCK_DIR/calls.log"
-    printf '#!/bin/bash\necho "$@" >> "%s"\n' "$CALLS" > "$MOCK_DIR/notify-send"
-    chmod +x "$MOCK_DIR/notify-send"
-    setup_shared_hooks_home
-
-    SESSION="test-session-fast-$$"
-    # Write a marker just 2 seconds ago
-    RECENT=$(( $(date +%s) - 2 ))
-    printf '%s\n' "$RECENT" > "$MOCK_DIR/claude-last-stop-$SESSION"
+@test "stop.sh: fails closed when shared notifier entrypoint is missing" {
+    EMPTY_HOME="$(mktemp -d)"
+    SESSION="test-session-missing-$$"
 
     run bash -c "
-        export HOME=\"$SHARED_HOOKS_HOME\"
-        export TMPDIR=\"$MOCK_DIR\"
-        export PATH=\"$MOCK_DIR:\$PATH\"
-        export WSL_DISTRO_NAME=Ubuntu
+        export HOME=\"$EMPTY_HOME\"
         printf '{\"stop_hook_active\":false,\"session_id\":\"$SESSION\"}' | '$STOP_SH'
     "
-    [ "$status" -eq 0 ]
-    [ ! -f "$CALLS" ] || [ ! -s "$CALLS" ]
-    rm -rf "$MOCK_DIR"
-    teardown_shared_hooks_home
+    [ "$status" -eq 2 ]
+    echo "$output" | grep -q "missing shared hook binary"
+    rm -rf "$EMPTY_HOME"
 }
