@@ -10,7 +10,7 @@ OpenAI が提供するターミナル向け AI コーディングエージェン
 | グローバル設定ファイル | `~/.codex/config.toml` | `~/.claude/settings.json` |
 | エージェント指示ファイル | `~/.codex/AGENTS.md` | `~/.claude/CLAUDE.md` |
 | `@path` インクルード構文 | 非対応 | 対応 |
-| フック種別 | `hooks.json` による `PreToolUse` / `Stop` など + `features.codex_hooks` | pre/post tool-use など多彩 |
+| フック種別 | `hooks.json` による `PreToolUse` / `Stop` など + `features.hooks` | pre/post tool-use など多彩 |
 | スキルディレクトリ | `~/.codex/skills/`（`~/.agents/skills/` を直接参照） | `~/.claude/skills/` |
 
 ## chezmoi 管理対象ファイル
@@ -70,7 +70,7 @@ used-tokens  five-hour-limit  weekly-limit
 | キー | 設定値 | 説明 |
 | --- | --- | --- |
 | `memories` | `true` | セッション横断メモリを有効化（デフォルト: `false`） |
-| `codex_hooks` | `true` | グローバル `hooks.json` の読み込みを有効化 |
+| `hooks` | `true` | グローバル `hooks.json` の読み込みを有効化 |
 
 ### `[profiles.*]` セクション
 

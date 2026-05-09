@@ -65,11 +65,14 @@ extract_table_block() {
     ' "$file"
 }
 
-@test "new install: enables codex_hooks feature" {
+@test "new install: enables hooks feature" {
     sh "$SCRIPT"
 
-    run grep -q '^codex_hooks = true$' "$HOME/.codex/config.toml"
+    run grep -q '^hooks = true$' "$HOME/.codex/config.toml"
     [ "$status" -eq 0 ]
+
+    run grep -q '^codex_hooks =' "$HOME/.codex/config.toml"
+    [ "$status" -eq 1 ]
 }
 
 @test "new install: writes curated comments and richer tui status line" {
@@ -264,8 +267,11 @@ notification_condition = "always"
 EOF
 )" ]
 
-    run grep -q '^codex_hooks = true$' "$HOME/.codex/config.toml"
+    run grep -q '^hooks = true$' "$HOME/.codex/config.toml"
     [ "$status" -eq 0 ]
+
+    run grep -q '^codex_hooks =' "$HOME/.codex/config.toml"
+    [ "$status" -eq 1 ]
 
     run grep -q '^memories = true$' "$HOME/.codex/config.toml"
     [ "$status" -eq 0 ]

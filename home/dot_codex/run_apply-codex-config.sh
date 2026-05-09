@@ -78,7 +78,7 @@ notification_condition = "always"
 
 [features]
 memories = true
-codex_hooks = true
+hooks = true
 
 [profiles.conservative]
 approval_policy = "on-request"
