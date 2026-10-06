@@ -1,0 +1,4 @@
+interface:
+  display_name: "Goal-driven Development"
+  short_description: "提案と実装の独立レビュー・検証・修正を繰り返し、開発ゴールを完了する"
+  default_prompt: "$goal-driven-development を使い、既存の許可範囲と完了条件に沿って、指定した開発ゴールを独立レビュー・検証・修正の反復で完了させてください。"
